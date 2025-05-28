@@ -3,11 +3,11 @@
 use crate::Arrived;
 use bevy::app::App;
 use bevy::prelude::{
-    in_state, Commands, Component, Entity,  IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform,
-    Update,  Vec3, Vec3Swizzles,
+    in_state, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform, Update,
+    Vec3, Vec3Swizzles,
 };
 
-macro_rules! systems {
+macro_rules! linear_movement_systems {
     () => {
         (travel)
     };
@@ -35,10 +35,10 @@ where
 {
     fn build(&self, app: &mut App) {
         if self.states.is_empty() {
-            app.add_systems(Update, systems!());
+            app.add_systems(Update, linear_movement_systems!());
         } else {
             for state in &self.states {
-                app.add_systems(Update, systems!().run_if(in_state(state.clone())));
+                app.add_systems(Update, linear_movement_systems!().run_if(in_state(state.clone())));
             }
         }
     }
@@ -59,10 +59,15 @@ impl LinearDestination {
 #[derive(Component, Default)]
 pub struct LinearMovement {
     pub velocity: f32,
+
     pub des: Vec<LinearDestination>,
+
+    /// Repeat destination. Going around in a circle.
     pub circle: bool,
+
     pub is_freezed: bool,
-    // Minimal distance to consider object is arrived
+
+    /// Minimal distance to consider object is arrived
     pub epsilon: f32,
 }
 

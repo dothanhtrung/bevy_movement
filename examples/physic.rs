@@ -1,15 +1,23 @@
 use bevy::prelude::*;
-use bevy_movement::linear::{LinearDestination, LinearMovement};
+use bevy_movement::physic::{PhysicDestination, PhysicMovement};
 use bevy_movement::MovementPluginAnyState;
+use bevy_rapier3d::prelude::GravityScale;
+#[cfg(feature = "physic")]
+use bevy_rapier3d::prelude::{Collider, NoUserData, RapierPhysicsPlugin, RigidBody};
 
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(MovementPluginAnyState::any())
-        .add_systems(Startup, setup)
-        .run();
+    let mut app = App::new();
+    app.add_plugins(DefaultPlugins)
+        .add_plugins(MovementPluginAnyState::any());
+
+    #[cfg(feature = "physic")]
+    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_systems(Startup, setup);
+
+    app.run();
 }
 
+#[cfg(feature = "physic")]
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     let cuboid = meshes.add(Cuboid::default());
     let debug_material = materials.add(StandardMaterial::default());
@@ -18,14 +26,18 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
         Mesh3d(cuboid),
         MeshMaterial3d(debug_material.clone()),
-        LinearMovement {
-            velocity: 0.01,
+        RigidBody::Dynamic,
+        Collider::cuboid(0.5, 0.5, 0.5),
+        GravityScale(0.),
+        PhysicMovement {
+            max_velocity: 5.,
+            min_velocity: 1.,
             circle: true,
             des: vec![
-                LinearDestination::from_pos(Vec3::new(4., 4., 4.)),
-                LinearDestination::from_pos(Vec3::new(1., 1., 1.)),
-                LinearDestination::from_pos(Vec3::new(-3., 3., -2.)),
-                LinearDestination::from_pos(Vec3::new(2.3, -4., -1.)),
+                PhysicDestination::from_pos(Vec3::new(4., 4., 4.)),
+                PhysicDestination::from_pos(Vec3::new(1., 1., 1.)),
+                PhysicDestination::from_pos(Vec3::new(-3., 3., -2.)),
+                PhysicDestination::from_pos(Vec3::new(2.3, -4., -1.)),
             ],
             ..default()
         },

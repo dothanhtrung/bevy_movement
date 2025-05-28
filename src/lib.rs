@@ -1,14 +1,15 @@
 // Copyright 2025 Trung Do <dothanhtrung@pm.me>
 
 pub mod linear;
+#[cfg(feature = "physic")]
 pub mod physic;
 
 use crate::linear::LinearMovementPlugin;
-use bevy::prelude::{App, Event, IntoScheduleConfigs, Plugin, States};
+use bevy::prelude::{App, Event, Plugin, States};
 
 /// The main plugin
 #[derive(Default)]
-pub struct MovementPlugin<T>
+pub struct MovementPlugin<T = DummyState>
 where
     T: States,
 {
@@ -22,6 +23,9 @@ where
 {
     fn build(&self, app: &mut App) {
         app.add_plugins(LinearMovementPlugin::new(self.states.clone()));
+
+        #[cfg(feature = "physic")]
+        app.add_plugins(physic::PhysicMovementPlugin::new(self.states.clone()));
     }
 }
 
