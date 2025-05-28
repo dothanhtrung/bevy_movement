@@ -1,0 +1,23 @@
+[package]
+name = "bevy_movement"
+version = "0.1.0"
+authors = ["Trung Do <dothanhtrung@pm.me>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://gitlab.com/kimtinh/bevy_movement"
+keywords = ["bevy"]
+description = "Bevy plugin for easy move object to a destination"
+exclude = ["assets", "examples", "tests", ".cargo"]
+categories = ["game-development"]
+
+[dependencies]
+bevy = { version = "0.16", features = ["bevy_state"], default-features = false }
+bevy_rapier3d = { version = "0.30", features = ["simd-stable", "parallel"], optional = true }
+
+[dev-dependencies]
+bevy = { version = "0.16" }
+
+[features]
+default = ["3d"]
+3d = []
+physic = ["bevy_rapier3d"]
