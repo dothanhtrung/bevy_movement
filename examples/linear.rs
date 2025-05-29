@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_movement::linear::{LinearDestination, LinearMovement};
-use bevy_movement::MovementPluginAnyState;
+use bevy_movement::{Arrived, MovementPluginAnyState};
 
 fn main() {
     App::new()
@@ -14,22 +14,18 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     let cuboid = meshes.add(Cuboid::default());
     let debug_material = materials.add(StandardMaterial::default());
 
-    commands.spawn((
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-        Mesh3d(cuboid),
-        MeshMaterial3d(debug_material.clone()),
-        LinearMovement {
-            velocity: 0.01,
-            circle: true,
-            des: vec![
-                LinearDestination::from_pos(Vec3::new(4., 4., 4.)),
-                LinearDestination::from_pos(Vec3::new(1., 1., 1.)),
-                LinearDestination::from_pos(Vec3::new(-3., 3., -2.)),
-                LinearDestination::from_pos(Vec3::new(2.3, -4., -1.)),
-            ],
-            ..default()
-        },
-    ));
+    commands
+        .spawn((
+            Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+            Mesh3d(cuboid),
+            MeshMaterial3d(debug_material.clone()),
+            LinearMovement {
+                velocity: 0.01,
+                des: vec![LinearDestination::from_pos(Vec3::new(4., 4., 4.))],
+                ..default()
+            },
+        ))
+        .observe(arrived);
 
     commands.spawn((
         PointLight {
@@ -46,4 +42,35 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Camera3d::default(),
         Transform::from_xyz(0.0, 7., 14.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
     ));
+}
+
+#[derive(Component)]
+struct Target;
+fn arrived(
+    trigger: Trigger<Arrived>,
+    mut query: Query<&mut LinearMovement>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    target: Query<Entity, With<Target>>,
+) {
+    for entity in target.iter() {
+        commands.entity(entity).despawn();
+    }
+    if let Ok(mut movement) = query.get_mut(trigger.target()) {
+        let next_target = Vec3::new(
+            fastrand::i32(-50..50) as f32 / 10.,
+            fastrand::i32(-50..50) as f32 / 10.,
+            fastrand::i32(-50..50) as f32 / 10.,
+        );
+
+        movement.des.push(LinearDestination::from_pos(next_target));
+
+        commands.spawn((
+            Mesh3d(meshes.add(Sphere::default())),
+            Transform::from_translation(next_target),
+            MeshMaterial3d(materials.add(StandardMaterial::default())),
+            Target,
+        ));
+    }
 }

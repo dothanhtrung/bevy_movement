@@ -16,6 +16,7 @@ bevy_rapier3d = { version = "0.30", features = ["simd-stable", "parallel"], opti
 
 [dev-dependencies]
 bevy = { version = "0.16" }
+fastrand = "2.3"
 
 [features]
 default = ["3d"]

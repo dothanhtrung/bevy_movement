@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_movement::physic::{PhysicDestination, PhysicMovement};
-use bevy_movement::MovementPluginAnyState;
+use bevy_movement::{Arrived, MovementPluginAnyState};
 use bevy_rapier3d::prelude::GravityScale;
 #[cfg(feature = "physic")]
 use bevy_rapier3d::prelude::{Collider, NoUserData, RapierPhysicsPlugin, RigidBody};
@@ -22,26 +22,23 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     let cuboid = meshes.add(Cuboid::default());
     let debug_material = materials.add(StandardMaterial::default());
 
-    commands.spawn((
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-        Mesh3d(cuboid),
-        MeshMaterial3d(debug_material.clone()),
-        RigidBody::Dynamic,
-        Collider::cuboid(0.5, 0.5, 0.5),
-        GravityScale(0.),
-        PhysicMovement {
-            max_velocity: 5.,
-            min_velocity: 1.,
-            circle: true,
-            des: vec![
-                PhysicDestination::from_pos(Vec3::new(4., 4., 4.)),
-                PhysicDestination::from_pos(Vec3::new(1., 1., 1.)),
-                PhysicDestination::from_pos(Vec3::new(-3., 3., -2.)),
-                PhysicDestination::from_pos(Vec3::new(2.3, -4., -1.)),
-            ],
-            ..default()
-        },
-    ));
+    commands
+        .spawn((
+            Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+            Mesh3d(cuboid),
+            MeshMaterial3d(debug_material),
+            RigidBody::Dynamic,
+            Collider::cuboid(0.5, 0.5, 0.5),
+            GravityScale(0.),
+            PhysicMovement {
+                max_velocity: 15.,
+                min_velocity: 10.,
+                epsilon: 0.5,
+                des: vec![PhysicDestination::from_pos(Vec3::new(4., 4., 4.))],
+                ..default()
+            },
+        ))
+        .observe(arrived);
 
     commands.spawn((
         PointLight {
@@ -58,4 +55,35 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Camera3d::default(),
         Transform::from_xyz(0.0, 7., 14.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
     ));
+}
+
+#[derive(Component)]
+struct Target;
+fn arrived(
+    trigger: Trigger<Arrived>,
+    mut query: Query<&mut PhysicMovement>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    target: Query<Entity, With<Target>>,
+) {
+    for entity in target.iter() {
+        commands.entity(entity).despawn();
+    }
+
+    if let Ok(mut movement) = query.get_mut(trigger.target()) {
+        let next_target = Vec3::new(
+            fastrand::i32(-50..50) as f32 / 10.,
+            fastrand::i32(-50..50) as f32 / 10.,
+            fastrand::i32(-50..50) as f32 / 10.,
+        );
+        movement.des.push(PhysicDestination::from_pos(next_target));
+
+        commands.spawn((
+            Mesh3d(meshes.add(Sphere::default())),
+            Transform::from_translation(next_target),
+            MeshMaterial3d(materials.add(StandardMaterial::default())),
+            Target,
+        ));
+    }
 }

@@ -56,7 +56,7 @@ impl LinearDestination {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 pub struct LinearMovement {
     pub velocity: f32,
 
@@ -69,6 +69,18 @@ pub struct LinearMovement {
 
     /// Minimal distance to consider object is arrived
     pub epsilon: f32,
+}
+
+impl Default for LinearMovement {
+    fn default() -> Self {
+        Self {
+            velocity: 0.,
+            des: Vec::new(),
+            circle: false,
+            is_freezed: false,
+            epsilon: 1e-4,
+        }
+    }
 }
 
 impl LinearMovement {

@@ -1,7 +1,11 @@
 use crate::Arrived;
-use bevy::prelude::{in_state, App, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, States, Transform, Update, Vec3};
+use bevy::prelude::ops::{cos, sin};
+use bevy::prelude::{
+    in_state, App, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform,
+    Update, Vec3,
+};
 use bevy::utils::default;
-use bevy_rapier3d::prelude::{AdditionalMassProperties, Collider, ColliderMassProperties, ExternalForce, ExternalImpulse, Velocity};
+use bevy_rapier3d::prelude::{AdditionalMassProperties, Collider, ColliderMassProperties, ExternalForce, Velocity};
 
 macro_rules! physic_movement_systems {
     () => {
@@ -51,7 +55,7 @@ impl PhysicDestination {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 #[require(Velocity)]
 pub struct PhysicMovement {
     pub des: Vec<PhysicDestination>,
@@ -64,6 +68,22 @@ pub struct PhysicMovement {
 
     pub max_velocity: f32,
     pub min_velocity: f32,
+
+    /// Time to accelerate to max velocity, f32 sec
+    pub acceleration_time: f32,
+}
+
+impl Default for PhysicMovement {
+    fn default() -> Self {
+        Self {
+            des: Vec::new(),
+            circle: false,
+            epsilon: 1e-4,
+            max_velocity: 0.,
+            min_velocity: 0.,
+            acceleration_time: 0.3,
+        }
+    }
 }
 
 fn travel(
@@ -73,15 +93,24 @@ fn travel(
         &Transform,
         &Velocity,
         &Collider,
+        Option<&mut ExternalForce>,
         Option<&ColliderMassProperties>,
         Option<&AdditionalMassProperties>,
         Entity,
     )>,
+    time: Res<Time>,
 ) {
-    for (mut movement, transform, velocity, collider, collider_mass, additional_mass, e) in query.iter_mut() {
+    for (mut movement, transform, velocity, collider, external_force, collider_mass, additional_mass, e) in
+        query.iter_mut()
+    {
         if let Some(next_pos) = movement.des.first() {
-            if transform.translation.distance(next_pos.pos) <= movement.epsilon {
-                commands.entity(e).remove::<ExternalImpulse>();
+            let goal_vect = next_pos.pos - transform.translation;
+            let angle = if velocity.linvel == Vec3::ZERO { 0. } else { goal_vect.angle_between(velocity.linvel) };
+            let real_vel = velocity.linvel.length();
+            let current_velocity = real_vel * cos(angle);
+            let distance = transform.translation.distance(next_pos.pos);
+            if distance <= movement.epsilon || distance <= current_velocity * time.delta_secs() {
+                commands.entity(e).remove::<ExternalForce>();
                 commands.trigger_targets(Arrived, e);
                 if movement.circle {
                     let first_des = movement.as_ref().des.first().unwrap().clone();
@@ -91,7 +120,6 @@ fn travel(
                 return;
             }
 
-            let current_velocity = velocity.linvel.distance(Vec3::ZERO);
             if current_velocity <= movement.min_velocity {
                 let mut mass = 0.;
 
@@ -108,12 +136,33 @@ fn travel(
                     Some(AdditionalMassProperties::MassProperties(p)) => p.mass,
                 };
 
-                let i = movement.max_velocity * mass;
-                let force = transform.translation.move_towards(next_pos.pos, i) - transform.translation;
-                commands.entity(e).insert(ExternalForce { force, ..default() });
+                let break_force = Vec3::ZERO.move_towards(
+                    velocity.linvel,
+                    -real_vel * sin(angle) / movement.acceleration_time * 2. * mass,
+                );
+
+                let d = (movement.max_velocity - current_velocity) / movement.acceleration_time * mass;
+                let forward_force = move_over(transform.translation, next_pos.pos, d) - transform.translation;
+
+                let new_force = break_force + forward_force;
+
+                if let Some(mut external_force) = external_force {
+                    external_force.force = new_force;
+                } else {
+                    commands.entity(e).insert(ExternalForce {
+                        force: new_force,
+                        ..default()
+                    });
+                }
             } else if current_velocity >= movement.max_velocity {
                 commands.entity(e).remove::<ExternalForce>();
             }
         }
     }
+}
+
+fn move_over(a: Vec3, b: Vec3, d: f32) -> Vec3 {
+    let x = b - a;
+    let len = x.length();
+    a + x / len * d
 }

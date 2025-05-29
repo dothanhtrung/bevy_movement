@@ -25,17 +25,17 @@ variables:
 #    <<: *global_cache
 #    policy: pull
 
-#test:
-#  stage: test
-#  script:
-#    - cargo test --tests
-#    - cargo test --examples
-#  rules:
-#    - changes:
-#      - Cargo.toml
-#      - src/**/*
-#      - examples/**/*
-#      - tests/**/*
+test:
+  stage: test
+  script:
+    - cargo test --examples
+    - cargo test --examples --features=physic
+  rules:
+    - changes:
+      - Cargo.toml
+      - src/**/*
+      - examples/**/*
+      - tests/**/*
 
 #publish:
 #  stage: deploy
