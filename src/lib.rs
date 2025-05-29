@@ -1,6 +1,8 @@
 // Copyright 2025 Trung Do <dothanhtrung@pm.me>
 
 pub mod linear;
+#[cfg(feature = "mouse_control")]
+pub mod mouse_control;
 #[cfg(feature = "physic")]
 pub mod physic;
 
@@ -26,6 +28,9 @@ where
 
         #[cfg(feature = "physic")]
         app.add_plugins(physic::PhysicMovementPlugin::new(self.states.clone()));
+
+        #[cfg(feature = "mouse_control")]
+        app.add_plugins(mouse_control::MouseControlMovementPlugin::new(self.states.clone()));
     }
 }
 

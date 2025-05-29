@@ -5,7 +5,10 @@ use bevy::prelude::{
     Update, Vec3,
 };
 use bevy::utils::default;
-use bevy_rapier3d::prelude::{AdditionalMassProperties, Collider, ColliderMassProperties, ExternalForce, Velocity};
+use bevy_rapier3d::prelude::{
+    AdditionalMassProperties, Collider, ColliderMassProperties, ExternalForce, NoUserData, RapierPhysicsPlugin,
+    Velocity,
+};
 
 macro_rules! physic_movement_systems {
     () => {
@@ -34,6 +37,8 @@ where
     T: States,
 {
     fn build(&self, app: &mut App) {
+        app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+
         if self.states.is_empty() {
             app.add_systems(Update, physic_movement_systems!());
         } else {
@@ -138,7 +143,7 @@ fn travel(
 
                 let break_force = Vec3::ZERO.move_towards(
                     velocity.linvel,
-                    -real_vel * sin(angle) / movement.acceleration_time * 2. * mass,
+                    -real_vel * sin(angle) / movement.acceleration_time * mass,
                 );
 
                 let d = (movement.max_velocity - current_velocity) / movement.acceleration_time * mass;

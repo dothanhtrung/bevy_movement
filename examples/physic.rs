@@ -1,32 +1,24 @@
 use bevy::prelude::*;
 use bevy_movement::physic::{PhysicDestination, PhysicMovement};
 use bevy_movement::{Arrived, MovementPluginAnyState};
-use bevy_rapier3d::prelude::GravityScale;
-#[cfg(feature = "physic")]
-use bevy_rapier3d::prelude::{Collider, NoUserData, RapierPhysicsPlugin, RigidBody};
+use bevy_rapier3d::prelude::*;
 
 fn main() {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
-        .add_plugins(MovementPluginAnyState::any());
-
-    #[cfg(feature = "physic")]
-    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_systems(Startup, setup);
-
-    app.run();
+        .add_plugins(MovementPluginAnyState::any())
+        .add_systems(Startup, setup)
+        .run();
 }
 
-#[cfg(feature = "physic")]
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
-    let cuboid = meshes.add(Cuboid::default());
-    let debug_material = materials.add(StandardMaterial::default());
+    let default_mat = materials.add(StandardMaterial::default());
 
     commands
         .spawn((
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-            Mesh3d(cuboid),
-            MeshMaterial3d(debug_material),
+            Mesh3d(meshes.add(Cuboid::default())),
+            MeshMaterial3d(default_mat),
             RigidBody::Dynamic,
             Collider::cuboid(0.5, 0.5, 0.5),
             GravityScale(0.),
@@ -59,6 +51,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
 #[derive(Component)]
 struct Target;
+
 fn arrived(
     trigger: Trigger<Arrived>,
     mut query: Query<&mut PhysicMovement>,

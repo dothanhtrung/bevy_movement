@@ -11,14 +11,13 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
-    let cuboid = meshes.add(Cuboid::default());
-    let debug_material = materials.add(StandardMaterial::default());
+    let default_mat = materials.add(StandardMaterial::default());
 
     commands
         .spawn((
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-            Mesh3d(cuboid),
-            MeshMaterial3d(debug_material.clone()),
+            Mesh3d(meshes.add(Cuboid::default())),
+            MeshMaterial3d(default_mat.clone()),
             LinearMovement {
                 velocity: 0.01,
                 des: vec![LinearDestination::from_pos(Vec3::new(4., 4., 4.))],

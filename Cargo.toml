@@ -11,14 +11,23 @@ exclude = ["assets", "examples", "tests", ".cargo"]
 categories = ["game-development"]
 
 [dependencies]
-bevy = { version = "0.16", features = ["bevy_state"], default-features = false }
+bevy = { version = "0.16", features = ["bevy_state", "bevy_render"], default-features = false }
 bevy_rapier3d = { version = "0.30", features = ["simd-stable", "parallel"], optional = true }
 
 [dev-dependencies]
-bevy = { version = "0.16" }
+bevy = { version = "0.16", features = ["dynamic_linking"] }
 fastrand = "2.3"
 
 [features]
 default = ["3d"]
 3d = []
 physic = ["bevy_rapier3d"]
+mouse_control = ["bevy/bevy_render", "bevy/bevy_window"]
+
+[[example]]
+name = "mouse_control"
+required-features = ["mouse_control"]
+
+[[example]]
+name = "physic"
+required-features = ["physic"]
