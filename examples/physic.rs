@@ -17,15 +17,15 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     commands
         .spawn((
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-            Mesh3d(meshes.add(Cuboid::default())),
+            Mesh3d(meshes.add(Cuboid::new(0.4, 0.4, 0.4))),
             MeshMaterial3d(default_mat),
             RigidBody::Dynamic,
-            Collider::cuboid(0.5, 0.5, 0.5),
+            Collider::cuboid(0.2, 0.2, 0.2),
             GravityScale(0.),
             PhysicMovement {
-                max_velocity: 15.,
-                min_velocity: 10.,
-                epsilon: 0.5,
+                max_velocity: 10.,
+                min_velocity: 5.,
+                epsilon: 0.1,
                 des: vec![PhysicDestination::from_pos(Vec3::new(4., 4., 4.))],
                 ..default()
             },
@@ -73,7 +73,7 @@ fn arrived(
         movement.des.push(PhysicDestination::from_pos(next_target));
 
         commands.spawn((
-            Mesh3d(meshes.add(Sphere::default())),
+            Mesh3d(meshes.add(Sphere::new(0.2))),
             Transform::from_translation(next_target),
             MeshMaterial3d(materials.add(StandardMaterial::default())),
             Target,

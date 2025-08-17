@@ -11,7 +11,7 @@ exclude = ["assets", "examples", "tests", ".cargo"]
 categories = ["game-development"]
 
 [dependencies]
-bevy = { version = "0.16", features = ["bevy_state", "bevy_render"], default-features = false }
+bevy = { version = "0.16", features = ["bevy_state"], default-features = false }
 bevy_rapier3d = { version = "0.30", features = ["simd-stable", "parallel"], optional = true }
 
 [dev-dependencies]

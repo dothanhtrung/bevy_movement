@@ -76,6 +76,8 @@ pub struct PhysicMovement {
 
     /// Time to accelerate to max velocity, f32 sec
     pub acceleration_time: f32,
+
+    pub break_time: f32,
 }
 
 impl Default for PhysicMovement {
@@ -87,6 +89,7 @@ impl Default for PhysicMovement {
             max_velocity: 0.,
             min_velocity: 0.,
             acceleration_time: 0.3,
+            break_time: 0.03,
         }
     }
 }
@@ -141,10 +144,8 @@ fn travel(
                     Some(AdditionalMassProperties::MassProperties(p)) => p.mass,
                 };
 
-                let break_force = Vec3::ZERO.move_towards(
-                    velocity.linvel,
-                    -real_vel * sin(angle) / movement.acceleration_time * mass,
-                );
+                let break_force =
+                    Vec3::ZERO.move_towards(velocity.linvel, -real_vel * sin(angle) / movement.break_time * mass);
 
                 let d = (movement.max_velocity - current_velocity) / movement.acceleration_time * mass;
                 let forward_force = move_over(transform.translation, next_pos.pos, d) - transform.translation;
