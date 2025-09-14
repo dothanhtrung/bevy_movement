@@ -1,4 +1,4 @@
-// Copyright 2025 Trung Do <dothanhtrung@pm.me>
+pub mod circle;
 
 use crate::Arrived;
 use bevy::app::App;
@@ -9,7 +9,10 @@ use bevy::prelude::{
 
 macro_rules! linear_movement_systems {
     () => {
-        (travel)
+        (
+            straight_travel,
+            circle_travel
+        )
     };
 }
 
@@ -58,12 +61,12 @@ impl LinearDestination {
 
 #[derive(Component)]
 pub struct LinearMovement {
-    pub velocity: f32,
+    pub speed: f32,
 
     pub des: Vec<LinearDestination>,
 
-    /// Repeat destination. Going around in a circle.
-    pub circle: bool,
+    /// Repeat destination
+    pub is_repeated: bool,
 
     pub is_freezed: bool,
 
@@ -74,9 +77,9 @@ pub struct LinearMovement {
 impl Default for LinearMovement {
     fn default() -> Self {
         Self {
-            velocity: 0.,
+            speed: 0.,
             des: Vec::new(),
-            circle: false,
+            is_repeated: false,
             is_freezed: false,
             epsilon: 1e-4,
         }
@@ -93,7 +96,7 @@ impl LinearMovement {
     }
 }
 
-fn travel(mut commands: Commands, time: Res<Time>, mut query: Query<(&mut Transform, &mut LinearMovement, Entity)>) {
+fn straight_travel(mut commands: Commands, time: Res<Time>, mut query: Query<(&mut Transform, &mut LinearMovement, Entity)>) {
     for (mut transform, mut movement, e) in query.iter_mut() {
         if movement.des.is_empty() || movement.is_freezed {
             continue;
@@ -101,7 +104,7 @@ fn travel(mut commands: Commands, time: Res<Time>, mut query: Query<(&mut Transf
 
         let mut arrived = false;
         let des = movement.des.first().unwrap();
-        let velocity = if let Some(custom_v) = des.custom_velocity { custom_v } else { movement.velocity };
+        let velocity = if let Some(custom_v) = des.custom_velocity { custom_v } else { movement.speed };
 
         let v = velocity * (time.delta().as_millis() as f32);
         let next_stop = movement.des.first().unwrap().pos;
@@ -124,8 +127,8 @@ fn travel(mut commands: Commands, time: Res<Time>, mut query: Query<(&mut Transf
         }
 
         if arrived {
-            commands.trigger_targets(Arrived, e);
-            if movement.circle {
+            commands.trigger(Arrived { entity: e });
+            if movement.is_repeated {
                 let first_des = movement.as_ref().des.first().unwrap().clone();
                 movement.des.push(first_des);
             }

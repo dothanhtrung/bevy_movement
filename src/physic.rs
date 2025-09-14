@@ -119,7 +119,7 @@ fn travel(
             let distance = transform.translation.distance(next_pos.pos);
             if distance <= movement.epsilon || distance <= current_velocity * time.delta_secs() {
                 commands.entity(e).remove::<ExternalForce>();
-                commands.trigger_targets(Arrived, e);
+                commands.trigger(Arrived { entity: e });
                 if movement.circle {
                     let first_des = movement.as_ref().des.first().unwrap().clone();
                     movement.des.push(first_des);

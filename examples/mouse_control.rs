@@ -89,7 +89,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         },
         #[cfg(not(feature = "physic"))]
         LinearMovement {
-            velocity: 0.01,
+            speed: 0.01,
             ..default()
         },
     ));

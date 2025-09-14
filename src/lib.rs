@@ -1,5 +1,3 @@
-// Copyright 2025 Trung Do <dothanhtrung@pm.me>
-
 pub mod linear;
 #[cfg(feature = "mouse_control")]
 pub mod mouse_control;
@@ -7,7 +5,7 @@ pub mod mouse_control;
 pub mod physic;
 
 use crate::linear::LinearMovementPlugin;
-use bevy::prelude::{App, Event, Plugin, States};
+use bevy::prelude::{App, Entity, EntityEvent, Plugin, States};
 
 /// The main plugin
 #[derive(Default)]
@@ -59,5 +57,7 @@ impl MovementPluginAnyState {
     }
 }
 
-#[derive(Event)]
-pub struct Arrived;
+#[derive(EntityEvent)]
+pub struct Arrived {
+    pub entity: Entity,
+}
