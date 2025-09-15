@@ -14,11 +14,11 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     let default_mat = materials.add(StandardMaterial::default());
 
     commands.spawn((
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+        Transform::from_translation(Vec3::new(1.0, 1.0, 1.0)),
         Mesh3d(meshes.add(Cuboid::default())),
         MeshMaterial3d(default_mat.clone()),
         LinearCircleMovement {
-            speed: 0.01,
+            speed: 5.,
             ..default()
         },
     ));

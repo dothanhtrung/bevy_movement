@@ -1,5 +1,6 @@
 pub mod circle;
 
+use crate::linear::circle::circle_travel;
 use crate::Arrived;
 use bevy::app::App;
 use bevy::prelude::{
@@ -9,10 +10,7 @@ use bevy::prelude::{
 
 macro_rules! linear_movement_systems {
     () => {
-        (
-            straight_travel,
-            circle_travel
-        )
+        (straight_travel, circle_travel)
     };
 }
 
@@ -96,7 +94,11 @@ impl LinearMovement {
     }
 }
 
-fn straight_travel(mut commands: Commands, time: Res<Time>, mut query: Query<(&mut Transform, &mut LinearMovement, Entity)>) {
+fn straight_travel(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut LinearMovement, Entity)>,
+) {
     for (mut transform, mut movement, e) in query.iter_mut() {
         if movement.des.is_empty() || movement.is_freezed {
             continue;
