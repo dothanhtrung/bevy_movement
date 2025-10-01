@@ -1,6 +1,6 @@
 [package]
 name = "bevy_movement"
-version = "0.2.0-rc.0"
+version = "0.2.0"
 authors = ["Trung Do <dothanhtrung@pm.me>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -11,11 +11,11 @@ exclude = ["assets", "examples", "tests", ".cargo"]
 categories = ["game-development"]
 
 [dependencies]
-bevy = { version = "0.17.0-rc", features = ["bevy_state"], default-features = false }
+bevy = { version = "0.17", features = ["bevy_state"], default-features = false }
 bevy_rapier3d = { version = "0.31", features = ["simd-stable", "parallel"], optional = true }
 
 [dev-dependencies]
-bevy = { version = "0.17.0-rc", features = ["dynamic_linking"] }
+bevy = { version = "0.17", features = ["dynamic_linking"] }
 fastrand = "2.3"
 
 [features]

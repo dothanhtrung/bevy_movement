@@ -53,7 +53,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 struct Target;
 
 fn arrived(
-    trigger: Trigger<Arrived>,
+    trigger: On<Arrived>,
     mut query: Query<&mut PhysicMovement>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
