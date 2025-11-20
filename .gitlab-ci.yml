@@ -1,7 +1,7 @@
 image: "dothanhtrung/bevy-dev:latest"
 
 before_script:
-  - sed -i '/^target-dir =/d' .cargo/config.toml
+  - rm -f .cargo/config.toml
 
 cache: &global_cache
   key: cargo_cache
@@ -28,8 +28,7 @@ variables:
 test:
   stage: test
   script:
-    - cargo install cargo-sweep
-    - cargo sweep -t 60 || true
+    - /usr/local/cargo/bin/cargo-sweep sweep -t 60 || true
     - cargo test --examples
     - cargo test --examples --features=physic
   rules:
