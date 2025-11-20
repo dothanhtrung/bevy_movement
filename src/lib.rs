@@ -1,3 +1,5 @@
+#![feature(exact_size_is_empty)]
+
 pub mod linear;
 #[cfg(feature = "mouse_control")]
 pub mod mouse_control;

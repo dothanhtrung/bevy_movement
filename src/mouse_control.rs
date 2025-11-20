@@ -49,10 +49,23 @@ where
 
 #[derive(Component)]
 pub struct ClickCatcher;
-#[derive(Component, Default)]
+
+#[derive(Component)]
 pub struct MovementObject {
     /// Push new destination to the chain instead of overwrite
     pub is_chain: bool,
+
+    /// Which button will trigger movement. Default is MouseButton::Left.
+    pub click_button: Vec<MouseButton>,
+}
+
+impl Default for MovementObject {
+    fn default() -> Self {
+        Self {
+            is_chain: false,
+            click_button: vec![MouseButton::Left],
+        }
+    }
 }
 
 fn click(
@@ -63,7 +76,7 @@ fn click(
     mut linear_object: Query<(Option<&mut LinearMovement>, &MovementObject)>,
     #[cfg(feature = "physic")] mut physic_object: Query<(Option<&mut PhysicMovement>, &MovementObject)>,
 ) {
-    if mouse_btn.just_pressed(MouseButton::Left) {
+    if !mouse_btn.get_just_pressed().is_empty() {
         let Ok((camera, camera_transform)) = camera_query.single() else {
             return;
         };
@@ -90,12 +103,14 @@ fn click(
             let point = ray.get_point(distance);
 
             for (linear_movement, obj) in linear_object.iter_mut() {
-                if let Some(mut movement) = linear_movement {
-                    let next = LinearDestination::from_pos(point);
-                    if obj.is_chain {
-                        movement.des.push(next);
-                    } else {
-                        movement.des = vec![next];
+                if mouse_btn.any_just_pressed(obj.click_button.clone()) {
+                    if let Some(mut movement) = linear_movement {
+                        let next = LinearDestination::from_pos(point);
+                        if obj.is_chain {
+                            movement.des.push(next);
+                        } else {
+                            movement.des = vec![next];
+                        }
                     }
                 }
             }
