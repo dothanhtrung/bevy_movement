@@ -70,6 +70,8 @@ pub struct LinearMovement {
 
     /// Minimal distance to consider object is arrived
     pub epsilon: f32,
+
+    pub offset: Vec3,
 }
 
 impl Default for LinearMovement {
@@ -80,6 +82,7 @@ impl Default for LinearMovement {
             is_repeated: false,
             is_freezed: false,
             epsilon: 1e-4,
+            offset: Vec3::ZERO,
         }
     }
 }
@@ -109,7 +112,7 @@ fn straight_travel(
         let velocity = if let Some(custom_v) = des.custom_velocity { custom_v } else { movement.speed };
 
         let v = velocity * (time.delta().as_millis() as f32);
-        let next_stop = movement.des.first().unwrap().pos;
+        let next_stop = movement.des.first().unwrap().pos + movement.offset;
 
         if cfg!(feature = "3d") {
             let xyz = transform.translation.move_towards(next_stop, v);
