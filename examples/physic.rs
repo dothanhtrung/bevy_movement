@@ -64,7 +64,7 @@ fn arrived(
         commands.entity(entity).despawn();
     }
 
-    if let Ok(mut movement) = query.get_mut(trigger.target()) {
+    if let Ok(mut movement) = query.get_mut(trigger.entity) {
         let next_target = Vec3::new(
             fastrand::i32(-50..50) as f32 / 10.,
             fastrand::i32(-50..50) as f32 / 10.,

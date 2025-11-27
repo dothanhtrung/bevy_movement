@@ -12,7 +12,7 @@ categories = ["game-development"]
 
 [dependencies]
 bevy = { version = "0.17", features = ["bevy_state"], default-features = false }
-bevy_rapier3d = { version = "0.31", features = ["simd-stable", "parallel"], optional = true }
+bevy_rapier3d = { version = "0.32", features = ["simd-stable", "parallel"], optional = true }
 
 [dev-dependencies]
 bevy = { version = "0.17", features = ["dynamic_linking"] }
