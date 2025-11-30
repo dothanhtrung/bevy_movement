@@ -78,6 +78,8 @@ pub struct PhysicMovement {
     pub acceleration_time: f32,
 
     pub break_time: f32,
+
+    pub offset: Vec3,
 }
 
 impl Default for PhysicMovement {
@@ -90,6 +92,7 @@ impl Default for PhysicMovement {
             min_velocity: 0.,
             acceleration_time: 0.3,
             break_time: 0.03,
+            offset: Vec3::ZERO,
         }
     }
 }
@@ -112,11 +115,12 @@ fn travel(
         query.iter_mut()
     {
         if let Some(next_pos) = movement.des.first() {
-            let goal_vect = next_pos.pos - transform.translation;
+            let next_stop = next_pos.pos + movement.offset;
+            let goal_vect = next_stop - transform.translation;
             let angle = if velocity.linvel == Vec3::ZERO { 0. } else { goal_vect.angle_between(velocity.linvel) };
             let real_vel = velocity.linvel.length();
             let current_velocity = real_vel * cos(angle);
-            let distance = transform.translation.distance(next_pos.pos);
+            let distance = transform.translation.distance(next_stop);
             if distance <= movement.epsilon || distance <= current_velocity * time.delta_secs() {
                 commands.entity(e).remove::<ExternalForce>();
                 commands.trigger(Arrived { entity: e });
@@ -148,7 +152,7 @@ fn travel(
                     Vec3::ZERO.move_towards(velocity.linvel, -real_vel * sin(angle) / movement.break_time * mass);
 
                 let d = (movement.max_velocity - current_velocity) / movement.acceleration_time * mass;
-                let forward_force = move_over(transform.translation, next_pos.pos, d) - transform.translation;
+                let forward_force = move_over(transform.translation, next_stop, d) - transform.translation;
 
                 let new_force = break_force + forward_force;
 
