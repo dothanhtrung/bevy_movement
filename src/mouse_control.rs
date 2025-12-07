@@ -1,10 +1,11 @@
 use crate::linear::{LinearDestination, LinearMovement};
 #[cfg(feature = "physic")]
 use crate::physic::{PhysicDestination, PhysicMovement};
+use crate::NextDes;
 use bevy::app::Update;
 use bevy::prelude::{
-    in_state, App, ButtonInput, Camera, Component, GlobalTransform, InfinitePlane3d, IntoScheduleConfigs, MouseButton,
-    Plugin, Query, Res, States, Window, With,
+    in_state, App, ButtonInput, Camera, Commands, Component, Entity, GlobalTransform, InfinitePlane3d,
+    IntoScheduleConfigs, MouseButton, Plugin, Query, Res, States, Window, With,
 };
 
 macro_rules! mouse_control_movement_systems {
@@ -69,11 +70,12 @@ impl Default for MovementObject {
 }
 
 fn click(
+    mut commands: Commands,
     mouse_btn: Res<ButtonInput<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     click_catchers: Query<&GlobalTransform, With<ClickCatcher>>,
     windows: Query<&Window>,
-    mut linear_object: Query<(Option<&mut LinearMovement>, &MovementObject)>,
+    mut linear_object: Query<(Entity, Option<&mut LinearMovement>, &MovementObject)>,
     #[cfg(feature = "physic")] mut physic_object: Query<(Option<&mut PhysicMovement>, &MovementObject)>,
 ) {
     if !mouse_btn.get_just_pressed().is_empty() {
@@ -101,8 +103,11 @@ fn click(
                 return;
             };
             let point = ray.get_point(distance);
+            for (entity, _, _) in linear_object.iter() {
+                commands.trigger(NextDes { entity, pos: point });
+            }
 
-            for (linear_movement, obj) in linear_object.iter_mut() {
+            for (_, linear_movement, obj) in linear_object.iter_mut() {
                 if mouse_btn.any_just_pressed(obj.click_button.clone()) {
                     if let Some(mut movement) = linear_movement {
                         let next = LinearDestination::from_pos(point);

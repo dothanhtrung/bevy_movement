@@ -7,7 +7,7 @@ pub mod mouse_control;
 pub mod physic;
 
 use crate::linear::LinearMovementPlugin;
-use bevy::prelude::{App, Entity, EntityEvent, Plugin, States};
+use bevy::prelude::{App, Entity, EntityEvent, Plugin, States, Vec3};
 
 /// The main plugin
 #[derive(Default)]
@@ -62,4 +62,10 @@ impl MovementPluginAnyState {
 #[derive(EntityEvent)]
 pub struct Arrived {
     pub entity: Entity,
+}
+
+#[derive(EntityEvent)]
+pub struct NextDes {
+    pub entity: Entity,
+    pub pos: Vec3,
 }
