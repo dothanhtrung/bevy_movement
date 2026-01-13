@@ -28,9 +28,9 @@ variables:
 test:
   stage: test
   script:
-    - /usr/local/cargo/bin/cargo-sweep sweep -t 60 || true
     - cargo test --examples
     - cargo test --examples --features=physic
+    - /usr/local/cargo/bin/cargo-sweep sweep -t 60 || true
   rules:
     - changes:
       - Cargo.toml

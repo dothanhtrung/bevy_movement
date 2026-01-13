@@ -27,7 +27,7 @@ Please see [LICENSE](./LICENSE).
 Compatible Bevy Versions
 ------------------------
 
-| bevy | bevy_movement |
-|------|---------------|
-| 0.17 | 0.2           |
-| 0.16 | 0.1           |
+| bevy      | bevy_movement |
+|-----------|---------------|
+| 0.17-0.18 | 0.2           |
+| 0.16      | 0.1           |
