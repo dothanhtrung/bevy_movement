@@ -11,17 +11,17 @@ exclude = ["assets", "examples", "tests", ".cargo"]
 categories = ["game-development"]
 
 [dependencies]
-bevy = { version = ">=0.17", features = ["bevy_state"], default-features = false }
-bevy_rapier3d = { version = "0.32", features = ["simd-stable", "parallel"], optional = true }
+bevy = { version = ">=0.18", features = ["bevy_state"], default-features = false }
+avian3d = { version = "0.6.0-rc", optional = true }
 
 [dev-dependencies]
-bevy = { version = ">=0.17", features = ["dynamic_linking"] }
+bevy = { version = ">=0.18", features = ["dynamic_linking"] }
 fastrand = "2.3"
 
 [features]
-default = ["3d"]
-3d = []
-physic = ["bevy_rapier3d"]
+default = []
+2d = []
+physic = ["avian3d"]
 mouse_control = ["bevy/bevy_render", "bevy/bevy_window"]
 
 [[example]]

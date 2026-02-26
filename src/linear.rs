@@ -2,17 +2,14 @@ pub mod circle;
 
 use crate::linear::circle::circle_travel;
 use crate::Arrived;
+#[cfg(all(feature = "physic"))]
+use avian3d::{prelude::LinearVelocity, PhysicsPlugins};
+use avian3d::math::Vector;
 use bevy::app::App;
 use bevy::prelude::{
     in_state, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform, Update,
     Vec3, Vec3Swizzles,
 };
-
-macro_rules! linear_movement_systems {
-    () => {
-        (straight_travel, circle_travel)
-    };
-}
 
 pub(crate) struct LinearMovementPlugin<T>
 where
@@ -35,11 +32,15 @@ where
     T: States,
 {
     fn build(&self, app: &mut App) {
+        #[cfg(feature = "physic")]
+        app.add_plugins(PhysicsPlugins::default());
+
+        let systems = (circle_travel, check_arrived, straight_travel);
         if self.states.is_empty() {
-            app.add_systems(Update, linear_movement_systems!());
+            app.add_systems(Update, systems);
         } else {
             for state in &self.states {
-                app.add_systems(Update, linear_movement_systems!().run_if(in_state(state.clone())));
+                app.add_systems(Update, systems.run_if(in_state(state.clone())));
             }
         }
     }
@@ -97,36 +98,61 @@ impl LinearMovement {
     }
 }
 
-fn straight_travel(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut LinearMovement, Entity)>,
-) {
-    for (mut transform, mut movement, e) in query.iter_mut() {
+#[cfg(not(feature = "physic"))]
+fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMovement)>) {
+    for (mut transform, movement) in query.iter_mut() {
         if movement.des.is_empty() || movement.is_freezed {
             continue;
         }
 
-        let mut arrived = false;
         let des = movement.des.first().unwrap();
         let velocity = if let Some(custom_v) = des.custom_velocity { custom_v } else { movement.speed };
 
         let v = velocity * (time.delta().as_millis() as f32);
         let next_stop = movement.des.first().unwrap().pos + movement.offset;
 
-        if cfg!(feature = "3d") {
-            let xyz = transform.translation.move_towards(next_stop, v);
-            transform.translation = xyz;
-
-            if transform.translation.distance(next_stop) <= movement.epsilon {
-                arrived = true;
-            }
-        } else {
+        if cfg!(feature = "2d") {
             let xy = transform.translation.xy().move_towards(next_stop.xy(), v);
             transform.translation.x = xy.x;
             transform.translation.y = xy.y;
+        } else {
+            let xyz = transform.translation.move_towards(next_stop, v);
+            transform.translation = xyz;
+        }
+    }
+}
 
+#[cfg(feature = "physic")]
+fn straight_travel( mut query: Query<(&mut Transform, &LinearMovement, &mut LinearVelocity)>) {
+    for (mut transform, movement, mut velocity) in query.iter_mut() {
+        if movement.des.is_empty() || movement.is_freezed {
+            continue;
+        }
+
+        let des = movement.des.first().unwrap();
+        let flat_vel = if let Some(custom_v) = des.custom_velocity { custom_v } else { movement.speed };
+        let next_stop = movement.des.first().unwrap().pos + movement.offset;
+        let direction = next_stop - transform.translation;
+
+        let len = direction.length();
+        if len <= flat_vel || len <= movement.epsilon {
+            **velocity = direction; // The velocity is m/s while direction is not px/frame.
+        } else {
+            **velocity = direction / len * flat_vel;
+        }
+    }
+}
+
+fn check_arrived(mut commands: Commands, mut query: Query<(&Transform, &mut LinearMovement, Entity)>) {
+    for (transform, mut movement, e) in query.iter_mut() {
+        let next_stop = movement.des.first().unwrap().pos + movement.offset;
+        let mut arrived = false;
+        if cfg!(feature = "2d") {
             if transform.translation.xy().distance(next_stop.xy()) <= movement.epsilon {
+                arrived = true;
+            }
+        } else {
+            if transform.translation.distance(next_stop) <= movement.epsilon {
                 arrived = true;
             }
         }

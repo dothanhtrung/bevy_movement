@@ -3,8 +3,8 @@
 pub mod linear;
 #[cfg(feature = "mouse_control")]
 pub mod mouse_control;
-#[cfg(feature = "physic")]
-pub mod physic;
+// #[cfg(feature = "physic")]
+// pub mod accel;
 
 use crate::linear::LinearMovementPlugin;
 use bevy::prelude::{App, Entity, EntityEvent, Plugin, States, Vec3};
@@ -26,8 +26,8 @@ where
     fn build(&self, app: &mut App) {
         app.add_plugins(LinearMovementPlugin::new(self.states.clone()));
 
-        #[cfg(feature = "physic")]
-        app.add_plugins(physic::PhysicMovementPlugin::new(self.states.clone()));
+        // #[cfg(feature = "physic")]
+        // app.add_plugins(physic::PhysicMovementPlugin::new(self.states.clone()));
 
         #[cfg(feature = "mouse_control")]
         app.add_plugins(mouse_control::MouseControlMovementPlugin::new(self.states.clone()));

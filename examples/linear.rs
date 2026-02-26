@@ -1,3 +1,5 @@
+#[cfg(feature = "physic")]
+use avian3d::prelude::{LinearVelocity, RigidBody};
 use bevy::prelude::*;
 use bevy_movement::linear::{LinearDestination, LinearMovement};
 use bevy_movement::{Arrived, MovementPluginAnyState};
@@ -19,10 +21,14 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
             Mesh3d(meshes.add(Cuboid::default())),
             MeshMaterial3d(default_mat.clone()),
             LinearMovement {
-                speed: 0.01,
+                speed: 2.,
                 des: vec![LinearDestination::from_pos(Vec3::new(4., 4., 4.))],
                 ..default()
             },
+            #[cfg(feature = "physic")]
+            LinearVelocity::default(),
+            #[cfg(feature = "physic")]
+            RigidBody::Dynamic,
         ))
         .observe(arrived);
 

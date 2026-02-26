@@ -17,10 +17,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Transform::from_translation(Vec3::new(1.0, 1.0, 1.0)),
         Mesh3d(meshes.add(Cuboid::default())),
         MeshMaterial3d(default_mat.clone()),
-        LinearCircleMovement {
-            speed: 5.,
-            ..default()
-        },
+        LinearCircleMovement { speed: 5., ..default() },
     ));
 
     commands.spawn((
