@@ -1,6 +1,6 @@
 use crate::linear::{LinearDestination, LinearMovement};
-#[cfg(feature = "physic")]
-use crate::physic::{PhysicDestination, PhysicMovement};
+// #[cfg(feature = "physic")]
+// use crate::physic::{PhysicDestination, PhysicMovement};
 use crate::NextDes;
 use bevy::app::Update;
 use bevy::prelude::{
@@ -76,7 +76,7 @@ fn click(
     click_catchers: Query<&GlobalTransform, With<ClickCatcher>>,
     windows: Query<&Window>,
     mut linear_object: Query<(Entity, Option<&mut LinearMovement>, &MovementObject)>,
-    #[cfg(feature = "physic")] mut physic_object: Query<(Option<&mut PhysicMovement>, &MovementObject)>,
+    // #[cfg(feature = "physic")] mut physic_object: Query<(Option<&mut PhysicMovement>, &MovementObject)>,
 ) {
     if !mouse_btn.get_just_pressed().is_empty() {
         let Ok((camera, camera_transform)) = camera_query.single() else {
@@ -120,17 +120,17 @@ fn click(
                 }
             }
 
-            #[cfg(feature = "physic")]
-            for (physic_movement, obj) in physic_object.iter_mut() {
-                if let Some(mut movement) = physic_movement {
-                    let next = PhysicDestination::from_pos(point);
-                    if obj.is_chain {
-                        movement.des.push(next)
-                    } else {
-                        movement.des = vec![next];
-                    }
-                }
-            }
+            // #[cfg(feature = "physic")]
+            // for (physic_movement, obj) in physic_object.iter_mut() {
+            //     if let Some(mut movement) = physic_movement {
+            //         let next = PhysicDestination::from_pos(point);
+            //         if obj.is_chain {
+            //             movement.des.push(next)
+            //         } else {
+            //             movement.des = vec![next];
+            //         }
+            //     }
+            // }
         }
     }
 }

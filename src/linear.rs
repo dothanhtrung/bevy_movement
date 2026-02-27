@@ -2,9 +2,9 @@ pub mod circle;
 
 use crate::linear::circle::circle_travel;
 use crate::Arrived;
+use avian3d::prelude::PhysicsSchedulePlugin;
 #[cfg(all(feature = "physic"))]
-use avian3d::{prelude::LinearVelocity, PhysicsPlugins};
-use avian3d::math::Vector;
+use avian3d::{math::Vector, prelude::LinearVelocity};
 use bevy::app::App;
 use bevy::prelude::{
     in_state, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform, Update,
@@ -33,7 +33,9 @@ where
 {
     fn build(&self, app: &mut App) {
         #[cfg(feature = "physic")]
-        app.add_plugins(PhysicsPlugins::default());
+        if !app.is_plugin_added::<PhysicsSchedulePlugin>() {
+            panic!("LinearMovementPlugin with 'physic' feature requires avian PhysicsPlugins. Add it first!");
+        }
 
         let systems = (circle_travel, check_arrived, straight_travel);
         if self.states.is_empty() {
@@ -123,7 +125,7 @@ fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMov
 }
 
 #[cfg(feature = "physic")]
-fn straight_travel( mut query: Query<(&mut Transform, &LinearMovement, &mut LinearVelocity)>) {
+fn straight_travel(mut query: Query<(&mut Transform, &LinearMovement, &mut LinearVelocity)>, time: Res<Time>) {
     for (mut transform, movement, mut velocity) in query.iter_mut() {
         if movement.des.is_empty() || movement.is_freezed {
             continue;
@@ -135,8 +137,9 @@ fn straight_travel( mut query: Query<(&mut Transform, &LinearMovement, &mut Line
         let direction = next_stop - transform.translation;
 
         let len = direction.length();
-        if len <= flat_vel || len <= movement.epsilon {
-            **velocity = direction; // The velocity is m/s while direction is not px/frame.
+        if len <= flat_vel * time.delta_secs() {
+            **velocity = Vector::ZERO;
+            transform.translation = next_stop;
         } else {
             **velocity = direction / len * flat_vel;
         }

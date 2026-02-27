@@ -1,12 +1,10 @@
+#[cfg(feature = "physic")]
+use avian3d::prelude::{Collider, RigidBody};
 use bevy::prelude::*;
 #[cfg(not(feature = "physic"))]
 use bevy_movement::linear::LinearMovement;
 use bevy_movement::mouse_control::{ClickCatcher, MovementObject};
-#[cfg(feature = "physic")]
-use bevy_movement::physic::PhysicMovement;
 use bevy_movement::MovementPluginAnyState;
-#[cfg(feature = "physic")]
-use bevy_rapier3d::prelude::{Collider, RigidBody};
 
 fn main() {
     let mut app = App::new();
@@ -24,7 +22,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     {
         commands.spawn((
             Collider::cuboid(10., 0.5, 10.),
-            RigidBody::KinematicPositionBased,
+            RigidBody::Kinematic,
             ClickCatcher,
             Mesh3d(meshes.add(Cuboid::new(20., 1., 20.))),
             Transform::from_xyz(0.0, 0., 0.0),
@@ -32,7 +30,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         ));
         commands.spawn((
             Collider::cuboid(10., 3., 1.),
-            RigidBody::KinematicPositionBased,
+            RigidBody::Kinematic,
             Transform::from_xyz(0.0, 0.5, -10.),
             MeshMaterial3d(default_mat.clone()),
             Mesh3d(meshes.add(Cuboid::new(20., 4., 2.))),
@@ -40,7 +38,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
         commands.spawn((
             Collider::cuboid(10., 3., 1.),
-            RigidBody::KinematicPositionBased,
+            RigidBody::Kinematic,
             Transform::from_xyz(0.0, 0.5, 10.),
             MeshMaterial3d(default_mat.clone()),
             Mesh3d(meshes.add(Cuboid::new(20., 4., 2.))),
@@ -48,7 +46,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
         commands.spawn((
             Collider::cuboid(1., 3., 10.),
-            RigidBody::KinematicPositionBased,
+            RigidBody::Kinematic,
             Transform::from_xyz(-10.0, 0.5, 0.),
             MeshMaterial3d(default_mat.clone()),
             Mesh3d(meshes.add(Cuboid::new(2., 4., 20.))),
@@ -56,7 +54,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
         commands.spawn((
             Collider::cuboid(1., 3., 10.),
-            RigidBody::KinematicPositionBased,
+            RigidBody::Kinematic,
             Transform::from_xyz(10.0, 0.5, 0.),
             MeshMaterial3d(default_mat.clone()),
             Mesh3d(meshes.add(Cuboid::new(2., 4., 20.))),
@@ -78,15 +76,15 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         #[cfg(feature = "physic")]
         RigidBody::Dynamic,
         #[cfg(feature = "physic")]
-        Collider::ball(0.5),
-        #[cfg(feature = "physic")]
-        PhysicMovement {
-            max_velocity: 15.,
-            min_velocity: 10.,
-            epsilon: 2.5,
-            des: vec![],
-            ..default()
-        },
+        Collider::sphere(0.5),
+        // #[cfg(feature = "physic")]
+        // PhysicMovement {
+        //     max_velocity: 15.,
+        //     min_velocity: 10.,
+        //     epsilon: 2.5,
+        //     des: vec![],
+        //     ..default()
+        // },
         #[cfg(not(feature = "physic"))]
         LinearMovement {
             speed: 0.01,
