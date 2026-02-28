@@ -1,12 +1,24 @@
-#[cfg(feature = "physic")]
-use avian3d::prelude::{LinearVelocity, RigidBody};
+#[cfg(feature = "physic_3d")]
+use avian3d::{
+    prelude::{LinearVelocity, RigidBody},
+    PhysicsPlugins,
+};
+#[cfg(feature = "physic_2d")]
+use avian2d::{
+    prelude::{LinearVelocity, RigidBody},
+    PhysicsPlugins,
+};
 use bevy::prelude::*;
 use bevy_movement::linear::{LinearDestination, LinearMovement};
 use bevy_movement::{Arrived, MovementPluginAnyState};
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((
+            DefaultPlugins,
+            #[cfg(feature = "physic")]
+            PhysicsPlugins::default(),
+        ))
         .add_plugins(MovementPluginAnyState::any())
         .add_systems(Startup, setup)
         .run();
@@ -28,7 +40,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
             #[cfg(feature = "physic")]
             LinearVelocity::default(),
             #[cfg(feature = "physic")]
-            RigidBody::Dynamic,
+            RigidBody::Kinematic,
         ))
         .observe(arrived);
 
