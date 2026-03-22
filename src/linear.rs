@@ -158,7 +158,7 @@ fn straight_travel(mut query: Query<(&mut Transform, &LinearMovement, &mut Linea
 
 fn check_arrived(mut commands: Commands, mut query: Query<(&Transform, &mut LinearMovement, Entity)>) {
     for (transform, mut movement, e) in query.iter_mut() {
-        if movement.des.is_empty() {
+        if movement.des.is_empty() || movement.is_freezed {
             continue;
         }
         let next_stop = movement.des.first().unwrap().pos + movement.offset;
