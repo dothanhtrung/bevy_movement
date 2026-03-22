@@ -1,10 +1,10 @@
-#[cfg(feature = "physic_3d")]
-use avian3d::{
+#[cfg(feature = "physic_2d")]
+use avian2d::{
     prelude::{LinearVelocity, RigidBody},
     PhysicsPlugins,
 };
-#[cfg(feature = "physic_2d")]
-use avian2d::{
+#[cfg(feature = "physic_3d")]
+use avian3d::{
     prelude::{LinearVelocity, RigidBody},
     PhysicsPlugins,
 };

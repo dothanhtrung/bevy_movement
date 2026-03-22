@@ -2,10 +2,16 @@ pub mod circle;
 
 use crate::linear::circle::circle_travel;
 use crate::Arrived;
-#[cfg(all(feature = "physic_3d"))]
-use avian3d::{math::Vector, prelude::{LinearVelocity, PhysicsSchedulePlugin}};
 #[cfg(all(feature = "physic_2d"))]
-use avian2d::{math::Vector, prelude::{LinearVelocity, PhysicsSchedulePlugin}};
+use avian2d::{
+    math::Vector,
+    prelude::{LinearVelocity, PhysicsSchedulePlugin},
+};
+#[cfg(all(feature = "physic_3d"))]
+use avian3d::{
+    math::Vector,
+    prelude::{LinearVelocity, PhysicsSchedulePlugin},
+};
 use bevy::app::App;
 use bevy::prelude::{
     in_state, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform, Update,
@@ -152,6 +158,9 @@ fn straight_travel(mut query: Query<(&mut Transform, &LinearMovement, &mut Linea
 
 fn check_arrived(mut commands: Commands, mut query: Query<(&Transform, &mut LinearMovement, Entity)>) {
     for (transform, mut movement, e) in query.iter_mut() {
+        if movement.des.is_empty() {
+            continue;
+        }
         let next_stop = movement.des.first().unwrap().pos + movement.offset;
         let mut arrived = false;
         if cfg!(feature = "2d") {
