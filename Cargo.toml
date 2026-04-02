@@ -1,6 +1,6 @@
 [package]
 name = "bevy_movement"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Trung Do <dothanhtrung@pm.me>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -14,6 +14,7 @@ categories = ["game-development"]
 bevy = { version = ">=0.18", features = ["bevy_state"], default-features = false }
 avian3d = { version = "0.6", optional = true }
 avian2d = { version = "0.6", optional = true }
+leafwing-input-manager = { version = "0.20", optional = true }
 
 [dev-dependencies]
 bevy = { version = ">=0.18", features = ["dynamic_linking"] }
@@ -26,11 +27,8 @@ physic = []
 physic_3d = ["physic", "avian3d"]
 physic_2d = ["physic", "2d", "avian2d"]
 mouse_control = ["bevy/bevy_render", "bevy/bevy_window"]
+kb_control = ["leafwing-input-manager"]
 
 [[example]]
 name = "mouse_control"
 required-features = ["mouse_control"]
-
-[[example]]
-name = "physic"
-required-features = ["physic"]

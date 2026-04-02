@@ -52,7 +52,7 @@ where
 pub struct ClickCatcher;
 
 #[derive(Component)]
-pub struct MovementObject {
+pub struct MouseMovementObject {
     /// Push new destination to the chain instead of overwrite
     pub is_chain: bool,
 
@@ -60,7 +60,7 @@ pub struct MovementObject {
     pub click_button: Vec<MouseButton>,
 }
 
-impl Default for MovementObject {
+impl Default for MouseMovementObject {
     fn default() -> Self {
         Self {
             is_chain: false,
@@ -75,41 +75,38 @@ fn click(
     camera_query: Query<(&Camera, &GlobalTransform)>,
     click_catchers: Query<&GlobalTransform, With<ClickCatcher>>,
     windows: Query<&Window>,
-    mut linear_object: Query<(Entity, Option<&mut LinearMovement>, &MovementObject)>,
-    // #[cfg(feature = "physic")] mut physic_object: Query<(Option<&mut PhysicMovement>, &MovementObject)>,
+    mut linear_object: Query<(Entity, Option<&mut LinearMovement>, &MouseMovementObject)>,
 ) {
-    if !mouse_btn.get_just_pressed().is_empty() {
-        let Ok((camera, camera_transform)) = camera_query.single() else {
-            return;
-        };
-
-        let Ok(window) = windows.single() else {
-            return;
-        };
-        let Some(cursor_position) = window.cursor_position() else {
-            return;
-        };
-
-        // Calculate a ray pointing from the camera into the world based on the cursor's position.
-        let Ok(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
-            return;
-        };
-
-        for click_catcher in click_catchers.iter() {
-            // Calculate if and where the ray is hitting the feeder plane.
-            let Some(distance) =
-                ray.intersect_plane(click_catcher.translation(), InfinitePlane3d::new(click_catcher.up()))
-            else {
+    for (entity, linear_movement, obj) in linear_object.iter_mut() {
+        if mouse_btn.any_just_pressed(obj.click_button) {
+            let Ok((camera, camera_transform)) = camera_query.single() else {
                 return;
             };
-            let point = ray.get_point(distance);
-            for (entity, _, _) in linear_object.iter() {
-                commands.trigger(NextDes { entity, pos: point });
-            }
 
-            for (_, linear_movement, obj) in linear_object.iter_mut() {
+            let Ok(window) = windows.single() else {
+                return;
+            };
+            let Some(cursor_position) = window.cursor_position() else {
+                return;
+            };
+
+            // Calculate a ray pointing from the camera into the world based on the cursor's position.
+            let Ok(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
+                return;
+            };
+
+            for click_catcher in click_catchers.iter() {
+                // Calculate if and where the ray is hitting the feeder plane.
+                let Some(distance) =
+                    ray.intersect_plane(click_catcher.translation(), InfinitePlane3d::new(click_catcher.up()))
+                else {
+                    return;
+                };
+                let point = ray.get_point(distance);
+                commands.trigger(NextDes { entity, pos: point });
+
                 if mouse_btn.any_just_pressed(obj.click_button.clone()) {
-                    if let Some(mut movement) = linear_movement {
+                    if let Some(mut movement) = linear_movement.as_ref() {
                         let next = LinearDestination::from_pos(point);
                         if obj.is_chain {
                             movement.des.push(next);
@@ -119,18 +116,6 @@ fn click(
                     }
                 }
             }
-
-            // #[cfg(feature = "physic")]
-            // for (physic_movement, obj) in physic_object.iter_mut() {
-            //     if let Some(mut movement) = physic_movement {
-            //         let next = PhysicDestination::from_pos(point);
-            //         if obj.is_chain {
-            //             movement.des.push(next)
-            //         } else {
-            //             movement.des = vec![next];
-            //         }
-            //     }
-            // }
         }
     }
 }

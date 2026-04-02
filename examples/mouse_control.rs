@@ -3,7 +3,7 @@ use avian3d::prelude::{Collider, RigidBody};
 use bevy::prelude::*;
 #[cfg(not(feature = "physic"))]
 use bevy_movement::linear::LinearMovement;
-use bevy_movement::mouse_control::{ClickCatcher, MovementObject};
+use bevy_movement::mouse_control::{ClickCatcher, MouseMovementObject};
 use bevy_movement::MovementPluginAnyState;
 
 fn main() {
@@ -70,7 +70,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
     commands.spawn((
         Transform::from_translation(Vec3::new(0.0, 2.0, 0.0)),
-        MovementObject::default(),
+        MouseMovementObject::default(),
         Mesh3d(meshes.add(Sphere::new(0.5))),
         MeshMaterial3d(default_mat),
         #[cfg(feature = "physic")]
