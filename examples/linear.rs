@@ -1,16 +1,28 @@
 #[cfg(feature = "physic_2d")]
 use avian2d::{
-    prelude::{LinearVelocity, RigidBody},
+    prelude::{
+        LinearVelocity,
+        RigidBody,
+    },
     PhysicsPlugins,
 };
 #[cfg(feature = "physic_3d")]
 use avian3d::{
-    prelude::{LinearVelocity, RigidBody},
+    prelude::{
+        LinearVelocity,
+        RigidBody,
+    },
     PhysicsPlugins,
 };
 use bevy::prelude::*;
-use bevy_movement::linear::{LinearDestination, LinearMovement};
-use bevy_movement::{Arrived, MovementPluginAnyState};
+use bevy_movement::linear::{
+    LinearDestination,
+    LinearMovement,
+};
+use bevy_movement::{
+    Arrived,
+    MovementPluginAnyState,
+};
 
 fn main() {
     App::new()

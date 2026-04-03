@@ -1,4 +1,12 @@
-use bevy::prelude::{Component, Quat, Query, Res, Time, Transform, Vec3};
+use bevy::prelude::{
+    Component,
+    Quat,
+    Query,
+    Res,
+    Time,
+    Transform,
+    Vec3,
+};
 
 #[derive(Component)]
 pub struct LinearCircleMovement {

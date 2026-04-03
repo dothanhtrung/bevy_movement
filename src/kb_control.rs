@@ -3,6 +3,7 @@ use crate::linear::{
     LinearMovement,
 };
 use bevy::app::App;
+use bevy::log::info;
 use bevy::math::{
     Vec2,
     Vec3,
@@ -17,12 +18,14 @@ use bevy::prelude::{
     Query,
     Reflect,
     States,
+    Transform,
     Update,
     With,
 };
 use leafwing_input_manager::prelude::{
     ActionState,
     GamepadStick,
+    InputManagerPlugin,
     InputMap,
     VirtualDPad,
 };
@@ -49,6 +52,8 @@ where
     T: States,
 {
     fn build(&self, app: &mut App) {
+        app.add_plugins(InputManagerPlugin::<MovementAction>::default())
+            .add_systems(Update, builder);
         if self.states.is_empty() {
             app.add_systems(Update, moving);
         } else {
@@ -76,26 +81,44 @@ impl MovementAction {
     }
 }
 
-// #[derive(Component)]
-// struct ActionInit;
-//
-// #[derive(Component)]
-// #[require(ActionInit)]
-// pub struct KbMovementObject;
-//
-// fn builder(mut commands: Commands, query: Query<(Entity, Option<&LinearMovement>), With<ActionInit>>) {
-//     for (entity, movement) in query.iter() {
-//         commands.entity(entity).insert(MovementAction::new());
-//         commands.entity(entity).remove::<ActionInit>();
-//     }
-// }
+#[derive(Component, Default)]
+struct ActionInit;
 
-fn moving(mut query: Query<(ActionState<MovementAction>, &mut LinearMovement)>) {
-    for (state, mut movement) in query.iter_mut() {
+#[derive(Component)]
+#[require(ActionInit)]
+pub struct KbMovementObject;
+
+fn builder(mut commands: Commands, query: Query<Entity, With<ActionInit>>) {
+    for entity in query.iter() {
+        commands.entity(entity).insert(MovementAction::new());
+        commands.entity(entity).remove::<ActionInit>();
+    }
+}
+
+fn moving(mut query: Query<(&ActionState<MovementAction>, &mut LinearMovement, &Transform), With<KbMovementObject>>) {
+    for (state, mut movement, transform) in query.iter_mut() {
         if state.axis_pair(&MovementAction::Walk) != Vec2::ZERO {
-            movement.des.push(LinearDestination::from_pos(
-                state.clamped_axis_pair(&MovementAction::Walk).into(),
-            ));
+            let direction = state.clamped_axis_pair(&MovementAction::Walk);
+            let next_pos = if cfg!(feature = "2d") {
+                Vec3::new(
+                    transform.translation.x + direction.x,
+                    transform.translation.y + direction.y,
+                    transform.translation.z,
+                )
+            } else {
+                Vec3::new(
+                    transform.translation.x + direction.x,
+                    transform.translation.y,
+                    transform.translation.z - direction.y,
+                )
+            };
+            if let Some(last_pos) = movement.des.last() {
+                if last_pos.pos == next_pos {
+                    continue;
+                }
+            }
+            // FIXME: Stutter movement
+            movement.des.push(LinearDestination::from_pos(next_pos));
         }
     }
 }

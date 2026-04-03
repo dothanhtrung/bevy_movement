@@ -1,11 +1,18 @@
+#[cfg(feature = "kb_control")]
+pub mod kb_control;
 pub mod linear;
 #[cfg(feature = "mouse_control")]
 pub mod mouse_control;
-#[cfg(feature = "kb_control")]
-pub mod kb_control;
 
 use crate::linear::LinearMovementPlugin;
-use bevy::prelude::{App, Entity, EntityEvent, Plugin, States, Vec3};
+use bevy::prelude::{
+    App,
+    Entity,
+    EntityEvent,
+    Plugin,
+    States,
+    Vec3,
+};
 
 /// The main plugin
 #[derive(Default)]

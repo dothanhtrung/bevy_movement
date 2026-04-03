@@ -1,11 +1,27 @@
-use crate::linear::{LinearDestination, LinearMovement};
-// #[cfg(feature = "physic")]
-// use crate::physic::{PhysicDestination, PhysicMovement};
+use crate::linear::{
+    LinearDestination,
+    LinearMovement,
+};
 use crate::NextDes;
 use bevy::app::Update;
 use bevy::prelude::{
-    in_state, App, ButtonInput, Camera, Commands, Component, Entity, GlobalTransform, InfinitePlane3d,
-    IntoScheduleConfigs, MouseButton, Plugin, Query, Res, States, Window, With,
+    in_state,
+    App,
+    ButtonInput,
+    Camera,
+    Commands,
+    Component,
+    Entity,
+    GlobalTransform,
+    InfinitePlane3d,
+    IntoScheduleConfigs,
+    MouseButton,
+    Plugin,
+    Query,
+    Res,
+    States,
+    Window,
+    With,
 };
 
 macro_rules! mouse_control_movement_systems {
@@ -75,10 +91,10 @@ fn click(
     camera_query: Query<(&Camera, &GlobalTransform)>,
     click_catchers: Query<&GlobalTransform, With<ClickCatcher>>,
     windows: Query<&Window>,
-    mut linear_object: Query<(Entity, Option<&mut LinearMovement>, &MouseMovementObject)>,
+    mut linear_object: Query<(Entity, &mut LinearMovement, &MouseMovementObject)>,
 ) {
-    for (entity, linear_movement, obj) in linear_object.iter_mut() {
-        if mouse_btn.any_just_pressed(obj.click_button) {
+    for (entity, mut linear_movement, obj) in linear_object.iter_mut() {
+        if mouse_btn.any_just_pressed(obj.click_button.clone()) {
             let Ok((camera, camera_transform)) = camera_query.single() else {
                 return;
             };
@@ -95,7 +111,7 @@ fn click(
                 return;
             };
 
-            for click_catcher in click_catchers.iter() {
+            if let Ok(click_catcher) = click_catchers.single() {
                 // Calculate if and where the ray is hitting the feeder plane.
                 let Some(distance) =
                     ray.intersect_plane(click_catcher.translation(), InfinitePlane3d::new(click_catcher.up()))
@@ -106,13 +122,11 @@ fn click(
                 commands.trigger(NextDes { entity, pos: point });
 
                 if mouse_btn.any_just_pressed(obj.click_button.clone()) {
-                    if let Some(mut movement) = linear_movement.as_ref() {
-                        let next = LinearDestination::from_pos(point);
-                        if obj.is_chain {
-                            movement.des.push(next);
-                        } else {
-                            movement.des = vec![next];
-                        }
+                    let next = LinearDestination::from_pos(point);
+                    if obj.is_chain {
+                        linear_movement.des.push(next);
+                    } else {
+                        linear_movement.des = vec![next];
                     }
                 }
             }

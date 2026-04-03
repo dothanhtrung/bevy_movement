@@ -32,3 +32,7 @@ kb_control = ["leafwing-input-manager"]
 [[example]]
 name = "mouse_control"
 required-features = ["mouse_control"]
+
+[[example]]
+name = "kb_control"
+required-features = ["kb_control"]

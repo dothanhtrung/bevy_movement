@@ -15,11 +15,9 @@ use avian3d::{
     PhysicsPlugins,
 };
 use bevy::prelude::*;
+#[cfg(feature = "kb_control")]
+use bevy_movement::kb_control::KbMovementObject;
 use bevy_movement::linear::LinearMovement;
-use bevy_movement::mouse_control::{
-    ClickCatcher,
-    MouseMovementObject,
-};
 use bevy_movement::MovementPluginAnyState;
 
 fn main() {
@@ -43,7 +41,6 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         commands.spawn((
             Collider::cuboid(20., 1., 20.),
             RigidBody::Static,
-            ClickCatcher,
             Mesh3d(meshes.add(Cuboid::new(20., 1., 20.))),
             Transform::from_xyz(0.0, 0., 0.0),
             MeshMaterial3d(default_mat.clone()),
@@ -83,14 +80,13 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
     #[cfg(not(feature = "physic"))]
     commands.spawn((
-        ClickCatcher,
         Mesh3d(meshes.add(Cuboid::new(20., 1., 20.))),
         Transform::from_xyz(0.0, 0., 0.0),
     ));
 
     commands.spawn((
         Transform::from_translation(Vec3::new(0.0, 3.0, 0.0)),
-        MouseMovementObject::default(),
+        KbMovementObject,
         Mesh3d(meshes.add(Sphere::new(0.5))),
         MeshMaterial3d(default_mat),
         #[cfg(feature = "physic")]
@@ -101,7 +97,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
             #[cfg(not(feature = "physic"))]
             speed: 0.01,
             #[cfg(feature = "physic")]
-            speed: 10.,
+            speed: 5.,
             ..default()
         },
     ));
