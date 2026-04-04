@@ -3,7 +3,6 @@ use crate::linear::{
     LinearMovement,
 };
 use bevy::app::App;
-use bevy::log::info;
 use bevy::math::{
     Vec2,
     Vec3,
@@ -76,6 +75,7 @@ impl MovementAction {
 
         input_map.insert_dual_axis(Self::Walk, GamepadStick::LEFT);
         input_map.insert_dual_axis(Self::Walk, VirtualDPad::wasd());
+        input_map.insert_dual_axis(Self::Walk, VirtualDPad::arrow_keys());
 
         input_map
     }
@@ -84,9 +84,18 @@ impl MovementAction {
 #[derive(Component, Default)]
 struct ActionInit;
 
+// TODO: Allow specify key for action
 #[derive(Component)]
 #[require(ActionInit)]
-pub struct KbMovementObject;
+pub struct KbMovementObject {
+    is_moving: bool,
+}
+
+impl KbMovementObject {
+    pub fn new() -> Self {
+        Self { is_moving: false }
+    }
+}
 
 fn builder(mut commands: Commands, query: Query<Entity, With<ActionInit>>) {
     for entity in query.iter() {
@@ -95,9 +104,17 @@ fn builder(mut commands: Commands, query: Query<Entity, With<ActionInit>>) {
     }
 }
 
-fn moving(mut query: Query<(&ActionState<MovementAction>, &mut LinearMovement, &Transform), With<KbMovementObject>>) {
-    for (state, mut movement, transform) in query.iter_mut() {
+fn moving(
+    mut query: Query<(
+        &ActionState<MovementAction>,
+        &mut LinearMovement,
+        &Transform,
+        &mut KbMovementObject,
+    )>,
+) {
+    for (state, mut movement, transform, mut kb_control) in query.iter_mut() {
         if state.axis_pair(&MovementAction::Walk) != Vec2::ZERO {
+            kb_control.is_moving = true;
             let direction = state.clamped_axis_pair(&MovementAction::Walk);
             let next_pos = if cfg!(feature = "2d") {
                 Vec3::new(
@@ -117,8 +134,10 @@ fn moving(mut query: Query<(&ActionState<MovementAction>, &mut LinearMovement, &
                     continue;
                 }
             }
-            // FIXME: Stutter movement
-            movement.des.push(LinearDestination::from_pos(next_pos));
+            movement.des = vec![LinearDestination::from_pos(next_pos)];
+        } else if kb_control.is_moving {
+            movement.stop();
+            kb_control.is_moving = false;
         }
     }
 }

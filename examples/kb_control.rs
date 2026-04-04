@@ -86,13 +86,13 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
     commands.spawn((
         Transform::from_translation(Vec3::new(0.0, 3.0, 0.0)),
-        KbMovementObject,
+        KbMovementObject::new(),
         Mesh3d(meshes.add(Sphere::new(0.5))),
         MeshMaterial3d(default_mat),
         #[cfg(feature = "physic")]
         RigidBody::Dynamic,
         #[cfg(feature = "physic")]
-        Collider::sphere(0.5),
+        Collider::cuboid(0.5,0.5,0.5),
         LinearMovement {
             #[cfg(not(feature = "physic"))]
             speed: 0.01,

@@ -96,6 +96,8 @@ pub struct LinearMovement {
 
     pub is_freezed: bool,
 
+    pub is_stopped: bool,
+
     /// Minimal distance to consider object is arrived
     pub epsilon: f32,
 
@@ -109,6 +111,7 @@ impl Default for LinearMovement {
             des: Vec::new(),
             is_repeated: false,
             is_freezed: false,
+            is_stopped: false,
             epsilon: 1e-4,
             offset: Vec3::ZERO,
         }
@@ -122,6 +125,12 @@ impl LinearMovement {
 
     pub fn go(&mut self) {
         self.is_freezed = false;
+    }
+
+    /// Stop current movement
+    pub fn stop(&mut self) {
+        self.des = Vec::new();
+        self.is_stopped = true;
     }
 }
 
@@ -150,8 +159,13 @@ fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMov
 }
 
 #[cfg(feature = "physic")]
-fn straight_travel(mut query: Query<(&mut Transform, &LinearMovement, &mut LinearVelocity)>, time: Res<Time>) {
-    for (mut transform, movement, mut velocity) in query.iter_mut() {
+fn straight_travel(mut query: Query<(&mut Transform, &mut LinearMovement, &mut LinearVelocity)>, time: Res<Time>) {
+    for (mut transform, mut movement, mut velocity) in query.iter_mut() {
+        if movement.is_stopped {
+            **velocity = Vector::ZERO;
+            movement.is_stopped = false;
+            continue;
+        }
         if movement.des.is_empty() || movement.is_freezed {
             continue;
         }
