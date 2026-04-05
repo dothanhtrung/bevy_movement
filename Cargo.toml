@@ -21,7 +21,7 @@ bevy = { version = ">=0.18", features = ["dynamic_linking"] }
 fastrand = "2.3"
 
 [features]
-default = []
+default = ["mouse_control", "kb_control"]
 2d = []
 physic = []
 physic_3d = ["physic", "avian3d"]
