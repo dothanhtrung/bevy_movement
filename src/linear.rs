@@ -57,7 +57,7 @@ where
     T: States,
 {
     fn build(&self, app: &mut App) {
-        #[cfg(feature = "physic")]
+        #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
         if !app.is_plugin_added::<PhysicsSchedulePlugin>() {
             panic!("LinearMovementPlugin with 'physic' feature requires avian PhysicsPlugins. Add it first!");
         }
@@ -134,7 +134,7 @@ impl LinearMovement {
     }
 }
 
-#[cfg(not(feature = "physic"))]
+#[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
 fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMovement)>) {
     for (mut transform, movement) in query.iter_mut() {
         if movement.des.is_empty() || movement.is_freezed {
@@ -158,7 +158,7 @@ fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMov
     }
 }
 
-#[cfg(feature = "physic")]
+#[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
 fn straight_travel(mut query: Query<(&mut Transform, &mut LinearMovement, &mut LinearVelocity)>, time: Res<Time>) {
     for (mut transform, mut movement, mut velocity) in query.iter_mut() {
         if movement.is_stopped {

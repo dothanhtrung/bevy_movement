@@ -28,7 +28,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            #[cfg(feature = "physic")]
+            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
             PhysicsPlugins::default(),
         ))
         .add_plugins(MovementPluginAnyState::any())
@@ -49,9 +49,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
                 des: vec![LinearDestination::from_pos(Vec3::new(4., 4., 4.))],
                 ..default()
             },
-            #[cfg(feature = "physic")]
+            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
             LinearVelocity::default(),
-            #[cfg(feature = "physic")]
+            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
             RigidBody::Kinematic,
         ))
         .observe(arrived);

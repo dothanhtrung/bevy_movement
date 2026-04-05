@@ -21,11 +21,11 @@ bevy = { version = ">=0.18", features = ["dynamic_linking"] }
 fastrand = "2.3"
 
 [features]
-default = ["mouse_control", "kb_control"]
+default = ["3d", "mouse_control", "kb_control"]
 2d = []
-physic = []
-physic_3d = ["physic", "avian3d"]
-physic_2d = ["physic", "2d", "avian2d"]
+3d = []
+physic_3d = ["3d", "avian3d"]
+physic_2d = ["2d", "avian2d"]
 mouse_control = ["bevy/bevy_render", "bevy/bevy_window"]
 kb_control = ["leafwing-input-manager"]
 

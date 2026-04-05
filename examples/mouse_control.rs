@@ -1,11 +1,5 @@
 #[cfg(feature = "physic_2d")]
-use avian2d::{
-    prelude::{
-        Collider,
-        RigidBody,
-    },
-    PhysicsPlugins,
-};
+use avian2d::PhysicsPlugins;
 #[cfg(feature = "physic_3d")]
 use avian3d::{
     prelude::{
@@ -25,7 +19,7 @@ use bevy_movement::MovementPluginAnyState;
 fn main() {
     let mut app = App::new();
 
-    #[cfg(feature = "physic")]
+    #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
     app.add_plugins(PhysicsPlugins::default());
 
     app.add_plugins(DefaultPlugins)
@@ -38,7 +32,7 @@ fn main() {
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     let default_mat = materials.add(StandardMaterial::default());
 
-    #[cfg(feature = "physic")]
+    #[cfg(feature = "physic_3d")]
     {
         commands.spawn((
             Collider::cuboid(20., 1., 20.),
@@ -81,7 +75,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         ));
     }
 
-    #[cfg(not(feature = "physic"))]
+    #[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
     commands.spawn((
         ClickCatcher,
         Mesh3d(meshes.add(Cuboid::new(20., 1., 20.))),
@@ -93,14 +87,14 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         MouseMovementObject::default(),
         Mesh3d(meshes.add(Sphere::new(0.5))),
         MeshMaterial3d(default_mat),
-        #[cfg(feature = "physic")]
+        #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
         RigidBody::Dynamic,
-        #[cfg(feature = "physic")]
+        #[cfg(feature = "physic_3d")]
         Collider::sphere(0.5),
         LinearMovement {
-            #[cfg(not(feature = "physic"))]
+            #[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
             speed: 0.01,
-            #[cfg(feature = "physic")]
+            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
             speed: 10.,
             ..default()
         },

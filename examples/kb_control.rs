@@ -23,7 +23,7 @@ use bevy_movement::MovementPluginAnyState;
 fn main() {
     let mut app = App::new();
 
-    #[cfg(feature = "physic")]
+    #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
     app.add_plugins(PhysicsPlugins::default());
 
     app.add_plugins(DefaultPlugins)
@@ -36,7 +36,7 @@ fn main() {
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     let default_mat = materials.add(StandardMaterial::default());
 
-    #[cfg(feature = "physic")]
+    #[cfg(feature = "physic_3d")]
     {
         commands.spawn((
             Collider::cuboid(20., 1., 20.),
@@ -78,7 +78,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         ));
     }
 
-    #[cfg(not(feature = "physic"))]
+    #[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
     commands.spawn((
         Mesh3d(meshes.add(Cuboid::new(20., 1., 20.))),
         Transform::from_xyz(0.0, 0., 0.0),
@@ -89,14 +89,14 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         KbMovementObject::new(),
         Mesh3d(meshes.add(Sphere::new(0.5))),
         MeshMaterial3d(default_mat),
-        #[cfg(feature = "physic")]
+        #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
         RigidBody::Dynamic,
-        #[cfg(feature = "physic")]
+        #[cfg(feature = "physic_3d")]
         Collider::cuboid(0.5,0.5,0.5),
         LinearMovement {
-            #[cfg(not(feature = "physic"))]
+            #[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
             speed: 0.01,
-            #[cfg(feature = "physic")]
+            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
             speed: 5.,
             ..default()
         },
