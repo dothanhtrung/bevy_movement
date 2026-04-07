@@ -93,8 +93,8 @@ pub struct KbMovementObject {
     is_moving: bool,
 }
 
-impl KbMovementObject {
-    pub fn new() -> Self {
+impl Default for KbMovementObject {
+    fn default() -> Self {
         Self { is_moving: false }
     }
 }
