@@ -1,17 +1,20 @@
-use avian2d::prelude::GravityScale;
 #[cfg(feature = "physic_2d")]
 use avian2d::{
     prelude::{
         Collider,
+        GravityScale,
         RigidBody,
     },
     PhysicsPlugins,
 };
-use bevy::color::palettes::basic::WHITE;
+use bevy::color::palettes::basic::{BLACK, WHITE};
 use bevy::prelude::*;
-#[cfg(feature = "kb_control")]
 use bevy_movement::kb_control::KbMovementObject;
 use bevy_movement::linear::LinearMovement;
+use bevy_movement::mouse_control::{
+    ClickCatcher,
+    MouseMovementObject,
+};
 use bevy_movement::MovementPluginAnyState;
 
 fn main() {
@@ -31,6 +34,18 @@ fn main() {
 fn setup(mut commands: Commands) {
     let wall_size = Vec2::new(640., 60.);
 
+    // Ground
+    commands.spawn((
+        ClickCatcher::default(),
+        Sprite {
+            custom_size: Some(Vec2::new(640., 640.)),
+            color: BLACK.into(),
+            ..default()
+        },
+        Transform::from_xyz(0., 0., -1.),
+    ));
+
+    // Wall
     commands.spawn((
         #[cfg(feature = "physic_2d")]
         Collider::rectangle(wall_size.x, wall_size.y),
@@ -80,9 +95,11 @@ fn setup(mut commands: Commands) {
         Transform::from_xyz(350.0, 0., 0.0),
     ));
 
+    // Movement object
     commands.spawn((
         Transform::from_translation(Vec3::new(0.0, 3.0, 0.0)),
-        KbMovementObject::new(),
+        KbMovementObject::default(),    // Move by keyboard/gamepad input
+        MouseMovementObject::default(), // Move by mouse input
         Sprite {
             color: WHITE.into(),
             custom_size: Some(Vec2::new(64., 64.)),

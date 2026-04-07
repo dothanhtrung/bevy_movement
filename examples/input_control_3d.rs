@@ -7,9 +7,12 @@ use avian3d::{
     PhysicsPlugins,
 };
 use bevy::prelude::*;
-#[cfg(feature = "kb_control")]
 use bevy_movement::kb_control::KbMovementObject;
 use bevy_movement::linear::LinearMovement;
+use bevy_movement::mouse_control::{
+    ClickCatcher,
+    MouseMovementObject,
+};
 use bevy_movement::MovementPluginAnyState;
 
 fn main() {
@@ -34,7 +37,8 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Collider::cuboid(20., 1., 20.),
         #[cfg(feature = "physic_3d")]
         RigidBody::Static,
-        Mesh3d(meshes.add(Cuboid::new(20., 1., 20.))),
+        ClickCatcher{offset: Vec3::new(0., 0.5 + 0.05 , 0.)}, // Catch mouse click. Offset = (object height + ground height) / 2
+        Mesh3d(meshes.add(Cuboid::new(20., 0.1, 20.))),
         Transform::from_xyz(0.0, 0., 0.0),
         MeshMaterial3d(default_mat.clone()),
     ));
@@ -82,7 +86,8 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
     commands.spawn((
         Transform::from_translation(Vec3::new(0.0, 3.0, 0.0)),
-        KbMovementObject::new(),
+        KbMovementObject::default(),    // Move by keyboard/gamepad input
+        MouseMovementObject::default(), // Move by mouse input
         Mesh3d(meshes.add(Sphere::new(0.5))),
         MeshMaterial3d(default_mat),
         #[cfg(feature = "physic_3d")]
