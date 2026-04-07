@@ -20,15 +20,10 @@ use bevy::prelude::{
     Query,
     Res,
     States,
+    Vec3,
     Window,
-    With,
+    Without,
 };
-
-macro_rules! mouse_control_movement_systems {
-    () => {
-        (click)
-    };
-}
 
 pub(crate) struct MouseControlMovementPlugin<T>
 where
@@ -52,20 +47,19 @@ where
 {
     fn build(&self, app: &mut App) {
         if self.states.is_empty() {
-            app.add_systems(Update, mouse_control_movement_systems!());
+            app.add_systems(Update, click);
         } else {
             for state in &self.states {
-                app.add_systems(
-                    Update,
-                    mouse_control_movement_systems!().run_if(in_state(state.clone())),
-                );
+                app.add_systems(Update, click.run_if(in_state(state.clone())));
             }
         }
     }
 }
 
-#[derive(Component)]
-pub struct ClickCatcher;
+#[derive(Component, Default)]
+pub struct ClickCatcher {
+    pub offset: Vec3,
+}
 
 #[derive(Component)]
 pub struct MouseMovementObject {
@@ -89,36 +83,37 @@ fn click(
     mut commands: Commands,
     mouse_btn: Res<ButtonInput<MouseButton>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
-    click_catchers: Query<&GlobalTransform, With<ClickCatcher>>,
+    click_catchers: Query<(&GlobalTransform, &ClickCatcher), Without<Camera>>,
     windows: Query<&Window>,
     mut linear_object: Query<(Entity, &mut LinearMovement, &MouseMovementObject)>,
 ) {
+    let Ok((camera, camera_transform)) = camera_query.single() else {
+        return;
+    };
+
+    let Ok(window) = windows.single() else {
+        return;
+    };
+    let Some(cursor_position) = window.cursor_position() else {
+        return;
+    };
+
+    // Calculate a ray pointing from the camera into the world based on the cursor's position.
+    let Ok(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
+        return;
+    };
+
     for (entity, mut linear_movement, obj) in linear_object.iter_mut() {
         if mouse_btn.any_just_pressed(obj.click_button.clone()) {
-            let Ok((camera, camera_transform)) = camera_query.single() else {
-                return;
-            };
-
-            let Ok(window) = windows.single() else {
-                return;
-            };
-            let Some(cursor_position) = window.cursor_position() else {
-                return;
-            };
-
-            // Calculate a ray pointing from the camera into the world based on the cursor's position.
-            let Ok(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
-                return;
-            };
-
-            if let Ok(click_catcher) = click_catchers.single() {
+            for (global_transform, click_catcher) in click_catchers.iter() {
                 // Calculate if and where the ray is hitting the feeder plane.
-                let Some(distance) =
-                    ray.intersect_plane(click_catcher.translation(), InfinitePlane3d::new(click_catcher.up()))
-                else {
-                    return;
+                let Some(distance) = ray.intersect_plane(
+                    global_transform.translation(),
+                    InfinitePlane3d::new(global_transform.up()),
+                ) else {
+                    continue;
                 };
-                let point = ray.get_point(distance);
+                let point = ray.get_point(distance) + click_catcher.offset;
                 commands.trigger(NextDes { entity, pos: point });
 
                 if mouse_btn.any_just_pressed(obj.click_button.clone()) {
@@ -129,6 +124,7 @@ fn click(
                         linear_movement.des = vec![next];
                     }
                 }
+                break;
             }
         }
     }
