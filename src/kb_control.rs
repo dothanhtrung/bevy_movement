@@ -16,7 +16,9 @@ use bevy::prelude::{
     Plugin,
     Query,
     Reflect,
+    Res,
     States,
+    Time,
     Transform,
     Update,
     With,
@@ -111,22 +113,25 @@ fn moving(
         &Transform,
         &mut KbMovementObject,
     )>,
+    time: Res<Time>,
 ) {
     for (state, mut movement, transform, mut kb_control) in query.iter_mut() {
         if state.axis_pair(&MovementAction::Walk) != Vec2::ZERO {
             kb_control.is_moving = true;
             let direction = state.clamped_axis_pair(&MovementAction::Walk);
+            let distance = movement.speed * time.delta_secs();
+
             let next_pos = if cfg!(feature = "2d") {
                 Vec3::new(
-                    transform.translation.x + direction.x,
-                    transform.translation.y + direction.y,
+                    transform.translation.x + direction.x * distance,
+                    transform.translation.y + direction.y * distance,
                     transform.translation.z,
                 )
             } else {
                 Vec3::new(
-                    transform.translation.x + direction.x,
+                    transform.translation.x + direction.x * distance,
                     transform.translation.y,
-                    transform.translation.z - direction.y,
+                    transform.translation.z - direction.y * distance,
                 )
             };
             if let Some(last_pos) = movement.des.last() {
