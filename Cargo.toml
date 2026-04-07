@@ -18,13 +18,13 @@ leafwing-input-manager = { version = "0.20", optional = true }
 
 [dev-dependencies]
 bevy = { version = ">=0.18", features = ["dynamic_linking"] }
-fastrand = "2.3"
+fastrand = "2.4"
 
 [features]
-default = ["3d", "mouse_control", "kb_control"]
+default = ["mouse_control", "kb_control"]
 2d = []
-3d = []
-physic_3d = ["3d", "avian3d"]
+# physic_3d and physic_2d cannot be enabled at the same time
+physic_3d = ["avian3d"]
 physic_2d = ["2d", "avian2d"]
 mouse_control = ["bevy/bevy_render", "bevy/bevy_window"]
 kb_control = ["leafwing-input-manager"]
@@ -34,5 +34,13 @@ name = "mouse_control"
 required-features = ["mouse_control"]
 
 [[example]]
-name = "kb_control"
+name = "kb_control_3d"
 required-features = ["kb_control"]
+
+[[example]]
+name = "kb_control_2d"
+required-features = ["kb_control", "2d"]
+
+[[example]]
+name = "simple_2d"
+required-features = ["2d"]

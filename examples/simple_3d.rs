@@ -1,11 +1,3 @@
-#[cfg(feature = "physic_2d")]
-use avian2d::{
-    prelude::{
-        LinearVelocity,
-        RigidBody,
-    },
-    PhysicsPlugins,
-};
 #[cfg(feature = "physic_3d")]
 use avian3d::{
     prelude::{
@@ -28,7 +20,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
+            #[cfg(feature = "physic_3d")]
             PhysicsPlugins::default(),
         ))
         .add_plugins(MovementPluginAnyState::any())
@@ -39,22 +31,19 @@ fn main() {
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     let default_mat = materials.add(StandardMaterial::default());
 
-    commands
+    let id = commands
         .spawn((
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
             Mesh3d(meshes.add(Cuboid::default())),
             MeshMaterial3d(default_mat.clone()),
-            LinearMovement {
-                speed: 2.,
-                des: vec![LinearDestination::from_pos(Vec3::new(4., 4., 4.))],
-                ..default()
-            },
-            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
+            LinearMovement { speed: 2., ..default() },
+            #[cfg(feature = "physic_3d")]
             LinearVelocity::default(),
-            #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
+            #[cfg(feature = "physic_3d")]
             RigidBody::Kinematic,
         ))
-        .observe(arrived);
+        .observe(arrived)
+        .id();
 
     commands.spawn((
         PointLight {
@@ -71,6 +60,10 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Camera3d::default(),
         Transform::from_xyz(0.0, 7., 14.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
     ));
+
+    // Just for example.
+    // Trigger function 'arrived' below to add new destination
+    commands.trigger(Arrived { entity: id });
 }
 
 #[derive(Component)]

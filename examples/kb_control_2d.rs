@@ -1,0 +1,104 @@
+use avian2d::prelude::GravityScale;
+#[cfg(feature = "physic_2d")]
+use avian2d::{
+    prelude::{
+        Collider,
+        RigidBody,
+    },
+    PhysicsPlugins,
+};
+use bevy::color::palettes::basic::WHITE;
+use bevy::prelude::*;
+#[cfg(feature = "kb_control")]
+use bevy_movement::kb_control::KbMovementObject;
+use bevy_movement::linear::LinearMovement;
+use bevy_movement::MovementPluginAnyState;
+
+fn main() {
+    let mut app = App::new();
+
+    app.add_plugins(DefaultPlugins);
+
+    #[cfg(feature = "physic_2d")]
+    app.add_plugins(PhysicsPlugins::default());
+
+    app.add_plugins(MovementPluginAnyState::any())
+        .add_systems(Startup, setup);
+
+    app.run();
+}
+
+fn setup(mut commands: Commands) {
+    let wall_size = Vec2::new(640., 60.);
+
+    commands.spawn((
+        #[cfg(feature = "physic_2d")]
+        Collider::rectangle(wall_size.x, wall_size.y),
+        #[cfg(feature = "physic_2d")]
+        RigidBody::Static,
+        Sprite {
+            color: WHITE.into(),
+            custom_size: Some(wall_size),
+            ..default()
+        },
+        Transform::from_xyz(0.0, 210., 0.0),
+    ));
+    commands.spawn((
+        #[cfg(feature = "physic_2d")]
+        Collider::rectangle(wall_size.x, wall_size.y),
+        #[cfg(feature = "physic_2d")]
+        RigidBody::Static,
+        Sprite {
+            color: WHITE.into(),
+            custom_size: Some(wall_size),
+            ..default()
+        },
+        Transform::from_xyz(0.0, -210., 0.0),
+    ));
+    commands.spawn((
+        #[cfg(feature = "physic_2d")]
+        Collider::rectangle(wall_size.y, wall_size.x),
+        #[cfg(feature = "physic_2d")]
+        RigidBody::Static,
+        Sprite {
+            color: WHITE.into(),
+            custom_size: Some(Vec2::new(wall_size.y, wall_size.x)),
+            ..default()
+        },
+        Transform::from_xyz(-350.0, 0., 0.0),
+    ));
+    commands.spawn((
+        #[cfg(feature = "physic_2d")]
+        Collider::rectangle(wall_size.y, wall_size.x),
+        #[cfg(feature = "physic_2d")]
+        RigidBody::Static,
+        Sprite {
+            color: WHITE.into(),
+            custom_size: Some(Vec2::new(wall_size.y, wall_size.x)),
+            ..default()
+        },
+        Transform::from_xyz(350.0, 0., 0.0),
+    ));
+
+    commands.spawn((
+        Transform::from_translation(Vec3::new(0.0, 3.0, 0.0)),
+        KbMovementObject::new(),
+        Sprite {
+            color: WHITE.into(),
+            custom_size: Some(Vec2::new(64., 64.)),
+            ..default()
+        },
+        #[cfg(feature = "physic_2d")]
+        RigidBody::Dynamic,
+        #[cfg(feature = "physic_2d")]
+        Collider::rectangle(64., 64.),
+        #[cfg(feature = "physic_2d")]
+        GravityScale(0.),
+        LinearMovement {
+            speed: 100.,
+            ..default()
+        },
+    ));
+
+    commands.spawn(Camera2d);
+}
