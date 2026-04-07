@@ -144,7 +144,7 @@ fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMov
         let des = movement.des.first().unwrap();
         let velocity = if let Some(custom_v) = des.custom_velocity { custom_v } else { movement.speed };
 
-        let v = velocity * (time.delta().as_millis() as f32);
+        let v = velocity * time.delta_secs();
         let next_stop = movement.des.first().unwrap().pos + movement.offset;
 
         if cfg!(feature = "2d") {
