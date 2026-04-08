@@ -181,6 +181,8 @@ fn straight_travel(mut query: Query<(&mut Transform, &mut LinearMovement, &mut L
         let len = direction.length();
         if len <= flat_vel * time.delta_secs() {
             **velocity = Vector::ZERO;
+            // FIXME: If the destination is closer than the distance object can travel in 1 tick,
+            //        the object will go through the collider when enable physic
             transform.translation = next_stop;
         } else {
             **velocity = direction / len * flat_vel;
