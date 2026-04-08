@@ -19,21 +19,17 @@ use avian3d::{
     },
 };
 use bevy::app::App;
+use bevy::prelude::{in_state, info, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform, Update, Vec3, Vec3Swizzles};
+#[cfg(feature = "path_finding")]
 use bevy::prelude::{
-    in_state,
-    Commands,
-    Component,
-    Entity,
-    IntoScheduleConfigs,
-    Plugin,
-    Query,
-    Res,
-    States,
-    Time,
-    Transform,
-    Update,
-    Vec3,
-    Vec3Swizzles,
+    Deref,
+    DerefMut,
+    Resource,
+};
+#[cfg(feature = "path_finding")]
+use bevy_northstar::prelude::{
+    AgentPos,
+    NextPos,
 };
 
 pub(crate) struct LinearMovementPlugin<T>
@@ -62,7 +58,14 @@ where
             panic!("LinearMovementPlugin with 'physic' feature requires avian PhysicsPlugins. Add it first!");
         }
 
+        #[cfg(not(feature = "path_finding"))]
         let systems = (circle_travel, check_arrived, straight_travel);
+        #[cfg(feature = "path_finding")]
+        let systems = (circle_travel, check_arrived, straight_travel, update_travel_stop);
+
+        #[cfg(feature = "path_finding")]
+        app.insert_resource(TileSize(Vec3::new(1., 1., 1.)));
+
         if self.states.is_empty() {
             app.add_systems(Update, systems);
         } else {
@@ -134,6 +137,10 @@ impl LinearMovement {
     }
 }
 
+#[cfg(feature = "path_finding")]
+#[derive(Resource, Deref, DerefMut)]
+pub struct TileSize(pub Vec3);
+
 #[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
 fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMovement)>) {
     for (mut transform, movement) in query.iter_mut() {
@@ -190,8 +197,18 @@ fn straight_travel(mut query: Query<(&mut Transform, &mut LinearMovement, &mut L
     }
 }
 
-fn check_arrived(mut commands: Commands, mut query: Query<(&Transform, &mut LinearMovement, Entity)>) {
-    for (transform, mut movement, e) in query.iter_mut() {
+fn check_arrived(
+    mut commands: Commands,
+    #[cfg(not(feature = "path_finding"))] mut query: Query<(&Transform, &mut LinearMovement, Entity, Entity, Entity)>,
+    #[cfg(feature = "path_finding")] mut query: Query<(
+        &Transform,
+        &mut LinearMovement,
+        Entity,
+        &mut AgentPos,
+        &NextPos,
+    )>,
+) {
+    for (transform, mut movement, e, mut _agent_pos, _next_pos) in query.iter_mut() {
         if movement.des.is_empty() || movement.is_freezed {
             continue;
         }
@@ -214,6 +231,25 @@ fn check_arrived(mut commands: Commands, mut query: Query<(&Transform, &mut Line
                 movement.des.push(first_des);
             }
             movement.des.remove(0);
+
+            #[cfg(feature = "path_finding")]
+            {
+                commands.entity(e).remove::<NextPos>();
+                _agent_pos.0 = _next_pos.0;
+            }
+        }
+    }
+}
+
+#[cfg(feature = "path_finding")]
+fn update_travel_stop(mut query: Query<(&NextPos, &mut LinearMovement)>, tile_size: Res<TileSize>) {
+    for (next_pos, mut movement) in query.iter_mut() {
+        let next_pos_f = next_pos.0.as_vec3() * tile_size.0;
+        if let Some(des) = movement.des.first() {
+            if next_pos_f != des.pos {
+                info!("Set real next pos:  {:?}", next_pos_f);
+                movement.des = vec![LinearDestination::from_pos(next_pos_f)];
+            }
         }
     }
 }
