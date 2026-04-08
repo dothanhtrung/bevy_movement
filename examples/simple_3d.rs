@@ -1,11 +1,3 @@
-#[cfg(feature = "physic_3d")]
-use avian3d::{
-    prelude::{
-        LinearVelocity,
-        RigidBody,
-    },
-    PhysicsPlugins,
-};
 use bevy::prelude::*;
 use bevy_movement::linear::{
     LinearDestination,
@@ -18,11 +10,7 @@ use bevy_movement::{
 
 fn main() {
     App::new()
-        .add_plugins((
-            DefaultPlugins,
-            #[cfg(feature = "physic_3d")]
-            PhysicsPlugins::default(),
-        ))
+        .add_plugins((DefaultPlugins,))
         .add_plugins(MovementPluginAnyState::any())
         .add_systems(Startup, setup)
         .run();
@@ -37,10 +25,6 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
             Mesh3d(meshes.add(Cuboid::default())),
             MeshMaterial3d(default_mat.clone()),
             LinearMovement { speed: 2., ..default() },
-            #[cfg(feature = "physic_3d")]
-            LinearVelocity::default(),
-            #[cfg(feature = "physic_3d")]
-            RigidBody::Kinematic,
         ))
         .observe(arrived)
         .id();

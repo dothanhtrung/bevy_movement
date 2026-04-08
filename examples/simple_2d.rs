@@ -1,11 +1,3 @@
-#[cfg(feature = "physic_2d")]
-use avian2d::{
-    prelude::{
-        LinearVelocity,
-        RigidBody,
-    },
-    PhysicsPlugins,
-};
 use bevy::color::palettes::basic::WHITE;
 use bevy::prelude::*;
 use bevy_movement::linear::{
@@ -19,11 +11,7 @@ use bevy_movement::{
 
 fn main() {
     App::new()
-        .add_plugins((
-            DefaultPlugins,
-            #[cfg(feature = "physic_2d")]
-            PhysicsPlugins::default(),
-        ))
+        .add_plugins((DefaultPlugins,))
         .add_plugins(MovementPluginAnyState::any())
         .add_systems(Startup, setup)
         .run();
@@ -42,10 +30,6 @@ fn setup(mut commands: Commands) {
                 speed: 50.,
                 ..default()
             },
-            #[cfg(feature = "physic_2d")]
-            LinearVelocity::default(),
-            #[cfg(feature = "physic_2d")]
-            RigidBody::Kinematic,
         ))
         .observe(arrived)
         .id();
