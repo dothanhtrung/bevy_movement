@@ -98,33 +98,42 @@ fn click(
         return;
     };
 
-    // Calculate a ray pointing from the camera into the world based on the cursor's position.
-    let Ok(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
-        return;
-    };
+    let mut world_pos= Vec3::ZERO;
+    if cfg!(feature = "2d") {
+        let Ok(world_pos_2d) = camera.viewport_to_world_2d(camera_transform, cursor_position) else {
+            return;
+        };
+
+        world_pos = Vec3::new(world_pos_2d.x, world_pos_2d.y, 0.);
+    } else {
+        // Calculate a ray pointing from the camera into the world based on the cursor's position.
+        let Ok(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
+            return;
+        };
+        for (global_transform, click_catcher) in click_catchers.iter() {
+            // Calculate if and where the ray is hitting the feeder plane.
+            let Some(distance) = ray.intersect_plane(
+                global_transform.translation(),
+                InfinitePlane3d::new(global_transform.up()),
+            ) else {
+                continue;
+            };
+            world_pos = ray.get_point(distance) + click_catcher.offset;
+            break;
+        }
+    }
 
     for (entity, mut linear_movement, obj) in linear_object.iter_mut() {
         if mouse_btn.any_just_pressed(obj.click_button.clone()) {
-            for (global_transform, click_catcher) in click_catchers.iter() {
-                // Calculate if and where the ray is hitting the feeder plane.
-                let Some(distance) = ray.intersect_plane(
-                    global_transform.translation(),
-                    InfinitePlane3d::new(global_transform.up()),
-                ) else {
-                    continue;
-                };
-                let point = ray.get_point(distance) + click_catcher.offset;
-                commands.trigger(NextDes { entity, pos: point });
+            commands.trigger(NextDes { entity, pos: world_pos });
 
-                if mouse_btn.any_just_pressed(obj.click_button.clone()) {
-                    let next = LinearDestination::from_pos(point);
-                    if obj.is_chain {
-                        linear_movement.des.push(next);
-                    } else {
-                        linear_movement.des = vec![next];
-                    }
+            if mouse_btn.any_just_pressed(obj.click_button.clone()) {
+                let next = LinearDestination::from_pos(world_pos);
+                if obj.is_chain {
+                    linear_movement.des.push(next);
+                } else {
+                    linear_movement.des = vec![next];
                 }
-                break;
             }
         }
     }

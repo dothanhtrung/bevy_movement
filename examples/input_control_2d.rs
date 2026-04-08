@@ -7,14 +7,11 @@ use avian2d::{
     },
     PhysicsPlugins,
 };
-use bevy::color::palettes::basic::{BLACK, WHITE};
+use bevy::color::palettes::basic::WHITE;
 use bevy::prelude::*;
 use bevy_movement::kb_control::KbMovementObject;
 use bevy_movement::linear::LinearMovement;
-use bevy_movement::mouse_control::{
-    ClickCatcher,
-    MouseMovementObject,
-};
+use bevy_movement::mouse_control::MouseMovementObject;
 use bevy_movement::MovementPluginAnyState;
 
 fn main() {
@@ -33,17 +30,6 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     let wall_size = Vec2::new(640., 60.);
-
-    // Ground
-    commands.spawn((
-        ClickCatcher::default(),
-        Sprite {
-            custom_size: Some(Vec2::new(640., 640.)),
-            color: BLACK.into(),
-            ..default()
-        },
-        Transform::from_xyz(0., 0., -1.),
-    ));
 
     // Wall
     commands.spawn((

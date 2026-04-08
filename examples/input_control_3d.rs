@@ -34,10 +34,12 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     // Ground
     commands.spawn((
         #[cfg(feature = "physic_3d")]
-        Collider::cuboid(20., 1., 20.),
+        Collider::cuboid(20., 0.1, 20.),
         #[cfg(feature = "physic_3d")]
         RigidBody::Static,
-        ClickCatcher{offset: Vec3::new(0., 0.5 + 0.05 , 0.)}, // Catch mouse click. Offset = (object height + ground height) / 2
+        ClickCatcher {
+            offset: Vec3::new(0., 0.5 + 0.05, 0.),
+        }, // Catch mouse click. Offset = (object height + ground height) / 2
         Mesh3d(meshes.add(Cuboid::new(20., 0.1, 20.))),
         Transform::from_xyz(0.0, 0., 0.0),
         MeshMaterial3d(default_mat.clone()),
@@ -84,8 +86,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Mesh3d(meshes.add(Cuboid::new(2., 4., 20.))),
     ));
 
+    // Move object
     commands.spawn((
-        Transform::from_translation(Vec3::new(0.0, 3.0, 0.0)),
+        Transform::from_translation(Vec3::new(0.0, 0.5 + 0.05, 0.0)),
         KbMovementObject::default(),    // Move by keyboard/gamepad input
         MouseMovementObject::default(), // Move by mouse input
         Mesh3d(meshes.add(Sphere::new(0.5))),
@@ -93,7 +96,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         #[cfg(feature = "physic_3d")]
         RigidBody::Dynamic,
         #[cfg(feature = "physic_3d")]
-        Collider::cuboid(0.5, 0.5, 0.5),
+        Collider::sphere(0.5),
         LinearMovement { speed: 5., ..default() },
     ));
 
