@@ -3,6 +3,7 @@ use avian2d::{
     prelude::{
         Collider,
         GravityScale,
+        PhysicsDebugPlugin,
         RigidBody,
     },
     PhysicsPlugins,
@@ -20,7 +21,7 @@ fn main() {
     app.add_plugins(DefaultPlugins);
 
     #[cfg(feature = "physic_2d")]
-    app.add_plugins(PhysicsPlugins::default());
+    app.add_plugins((PhysicsPlugins::default(), PhysicsDebugPlugin));
 
     app.add_plugins(MovementPluginAnyState::any())
         .add_systems(Startup, setup);

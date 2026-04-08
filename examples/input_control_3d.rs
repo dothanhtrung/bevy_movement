@@ -2,6 +2,7 @@
 use avian3d::{
     prelude::{
         Collider,
+        PhysicsDebugPlugin,
         RigidBody,
     },
     PhysicsPlugins,
@@ -19,7 +20,7 @@ fn main() {
     let mut app = App::new();
 
     #[cfg(feature = "physic_3d")]
-    app.add_plugins(PhysicsPlugins::default());
+    app.add_plugins((PhysicsPlugins::default(), PhysicsDebugPlugin));
 
     app.add_plugins(DefaultPlugins)
         .add_plugins(MovementPluginAnyState::any())
