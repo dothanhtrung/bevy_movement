@@ -1,4 +1,4 @@
-#[cfg(feature = "physic_2d")]
+#[cfg(feature = "collider_2d")]
 use avian2d::{
     prelude::{
         Collider,
@@ -20,7 +20,7 @@ fn main() {
 
     app.add_plugins(DefaultPlugins);
 
-    #[cfg(feature = "physic_2d")]
+    #[cfg(feature = "collider_2d")]
     app.add_plugins((PhysicsPlugins::default(), PhysicsDebugPlugin));
 
     app.add_plugins(MovementPluginAnyState::any())
@@ -34,9 +34,9 @@ fn setup(mut commands: Commands) {
 
     // Wall
     commands.spawn((
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         Collider::rectangle(wall_size.x, wall_size.y),
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         RigidBody::Static,
         Sprite {
             color: WHITE.into(),
@@ -46,9 +46,9 @@ fn setup(mut commands: Commands) {
         Transform::from_xyz(0.0, 210., 0.0),
     ));
     commands.spawn((
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         Collider::rectangle(wall_size.x, wall_size.y),
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         RigidBody::Static,
         Sprite {
             color: WHITE.into(),
@@ -58,9 +58,9 @@ fn setup(mut commands: Commands) {
         Transform::from_xyz(0.0, -210., 0.0),
     ));
     commands.spawn((
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         Collider::rectangle(wall_size.y, wall_size.x),
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         RigidBody::Static,
         Sprite {
             color: WHITE.into(),
@@ -70,9 +70,9 @@ fn setup(mut commands: Commands) {
         Transform::from_xyz(-350.0, 0., 0.0),
     ));
     commands.spawn((
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         Collider::rectangle(wall_size.y, wall_size.x),
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         RigidBody::Static,
         Sprite {
             color: WHITE.into(),
@@ -92,11 +92,11 @@ fn setup(mut commands: Commands) {
             custom_size: Some(Vec2::new(64., 64.)),
             ..default()
         },
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         RigidBody::Dynamic,
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         Collider::rectangle(64., 64.),
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         GravityScale(0.),
         LinearMovement {
             speed: 100.,

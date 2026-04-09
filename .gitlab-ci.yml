@@ -29,8 +29,8 @@ test:
   stage: test
   script:
     - cargo test --examples
-    - cargo test --examples --features=physic_2d
-    - cargo test --examples --features=physic_3d
+    - cargo test --examples --features=collider_2d
+    - cargo test --examples --features=collider_3d
     - /usr/local/cargo/bin/cargo-sweep sweep -t 60 || true
   rules:
     - changes:

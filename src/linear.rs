@@ -6,7 +6,7 @@ use crate::{
     Destination,
     NextDes,
 };
-#[cfg(all(feature = "physic_2d"))]
+#[cfg(all(feature = "collider_2d"))]
 use avian2d::{
     math::Vector,
     prelude::{
@@ -14,7 +14,7 @@ use avian2d::{
         PhysicsSchedulePlugin,
     },
 };
-#[cfg(all(feature = "physic_3d"))]
+#[cfg(all(feature = "collider_3d"))]
 use avian3d::{
     math::Vector,
     prelude::{
@@ -69,7 +69,7 @@ where
     T: States,
 {
     fn build(&self, app: &mut App) {
-        #[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
+        #[cfg(any(feature = "collider_2d", feature = "collider_3d"))]
         if !app.is_plugin_added::<PhysicsSchedulePlugin>() {
             panic!("LinearMovementPlugin with 'physic' feature requires avian PhysicsPlugins. Add it first!");
         }
@@ -150,7 +150,7 @@ pub struct GridInfo {
     pub grid_offset: Vec3,
 }
 
-#[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
+#[cfg(not(any(feature = "collider_2d", feature = "collider_3d")))]
 fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMovement)>) {
     for (mut transform, movement) in query.iter_mut() {
         if movement.des.is_empty() || movement.is_freezed {
@@ -174,7 +174,7 @@ fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMov
     }
 }
 
-#[cfg(any(feature = "physic_2d", feature = "physic_3d"))]
+#[cfg(any(feature = "collider_2d", feature = "collider_3d"))]
 fn straight_travel(mut query: Query<(&mut Transform, &mut LinearMovement, &mut LinearVelocity)>, time: Res<Time>) {
     for (mut transform, mut movement, mut velocity) in query.iter_mut() {
         if movement.is_stopped {
@@ -189,9 +189,9 @@ fn straight_travel(mut query: Query<(&mut Transform, &mut LinearMovement, &mut L
         let des = movement.des.first().unwrap();
         let flat_vel = if let Some(custom_v) = des.custom_velocity { custom_v } else { movement.speed };
         let next_stop = movement.des.first().unwrap().pos + movement.offset;
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         let direction = next_stop - transform.translation;
-        #[cfg(feature = "physic_2d")]
+        #[cfg(feature = "collider_2d")]
         let direction = next_stop.xy() - transform.translation.xy();
 
         let len = direction.length();

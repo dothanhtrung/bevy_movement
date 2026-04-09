@@ -4,7 +4,7 @@
 [
   {
     "label": "Run Debug",
-    "command": "cargo run --features=physic_2d,mouse_control",
+    "command": "cargo run --features=collider_2d,mouse_control",
     //"args": [],
     // Env overrides for the command, will be appended to the terminal's environment from the settings.
     "env": { "RUST_LOG": "info" , "BEVY_ASSET_ROOT": "$ZED_WORKTREE_ROOT"},

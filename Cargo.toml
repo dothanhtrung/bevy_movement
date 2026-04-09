@@ -24,9 +24,9 @@ fastrand = "2.4"
 [features]
 default = ["mouse_control", "kb_control"]
 2d = []
-# physic_3d and physic_2d cannot be enabled at the same time
-physic_3d = ["avian3d"]
-physic_2d = ["2d", "avian2d"]
+# collider_3d and collider_2d cannot be enabled at the same time
+collider_3d = ["avian3d"]
+collider_2d = ["2d", "avian2d"]
 
 mouse_control = ["bevy/bevy_render", "bevy/bevy_window"]
 kb_control = ["leafwing-input-manager"]

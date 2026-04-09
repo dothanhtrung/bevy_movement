@@ -1,4 +1,4 @@
-#[cfg(feature = "physic_3d")]
+#[cfg(feature = "collider_3d")]
 use avian3d::{
     prelude::{
         Collider,
@@ -19,7 +19,7 @@ use bevy_movement::MovementPluginAnyState;
 fn main() {
     let mut app = App::new();
 
-    #[cfg(feature = "physic_3d")]
+    #[cfg(feature = "collider_3d")]
     app.add_plugins((PhysicsPlugins::default(), PhysicsDebugPlugin));
 
     app.add_plugins(DefaultPlugins)
@@ -34,9 +34,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
     // Ground
     commands.spawn((
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         Collider::cuboid(20., 0.1, 20.),
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         RigidBody::Static,
         ClickCatcher {
             offset: Vec3::new(0., 0.5 + 0.05, 0.),
@@ -48,9 +48,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
 
     // Wall
     commands.spawn((
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         Collider::cuboid(20., 4., 2.),
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         RigidBody::Static,
         Transform::from_xyz(0.0, 0.5, -10.),
         MeshMaterial3d(default_mat.clone()),
@@ -58,9 +58,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     ));
 
     commands.spawn((
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         Collider::cuboid(20., 4., 2.),
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         RigidBody::Static,
         Transform::from_xyz(0.0, 0.5, 10.),
         MeshMaterial3d(default_mat.clone()),
@@ -68,9 +68,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     ));
 
     commands.spawn((
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         Collider::cuboid(2., 4., 20.),
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         RigidBody::Static,
         Transform::from_xyz(-10.0, 0.5, 0.),
         MeshMaterial3d(default_mat.clone()),
@@ -78,9 +78,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
     ));
 
     commands.spawn((
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         Collider::cuboid(2., 4., 20.),
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         RigidBody::Static,
         Transform::from_xyz(10.0, 0.5, 0.),
         MeshMaterial3d(default_mat.clone()),
@@ -94,9 +94,9 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         MouseMovementObject::default(), // Move by mouse input
         Mesh3d(meshes.add(Sphere::new(0.5))),
         MeshMaterial3d(default_mat),
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         RigidBody::Dynamic,
-        #[cfg(feature = "physic_3d")]
+        #[cfg(feature = "collider_3d")]
         Collider::sphere(0.5),
         LinearMovement { speed: 5., ..default() },
     ));

@@ -7,7 +7,7 @@
     "rust-analyzer": {
       "initialization_options": {
         "cargo": {
-          "features": ["physic_2d"]
+          "features": ["collider_2d"]
         }
       }
     }
