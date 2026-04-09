@@ -67,10 +67,24 @@ impl MovementPluginAnyState {
 #[derive(EntityEvent)]
 pub struct Arrived {
     pub entity: Entity,
+    pub pos: Vec3,
 }
 
 #[derive(EntityEvent)]
 pub struct NextDes {
     pub entity: Entity,
+    pub des: Destination,
+    pub is_chain: bool,
+}
+
+#[derive(Default, Clone)]
+pub struct Destination {
     pub pos: Vec3,
+    pub custom_velocity: Option<f32>,
+}
+
+impl Destination {
+    pub fn from_pos(pos: Vec3) -> Self {
+        Self { pos, ..Self::default() }
+    }
 }

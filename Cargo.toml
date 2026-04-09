@@ -15,7 +15,7 @@ bevy = { version = ">=0.18", features = ["bevy_state"], default-features = false
 avian3d = { version = "0.6", optional = true }
 avian2d = { version = "0.6", optional = true }
 leafwing-input-manager = { version = "0.20", optional = true }
-bevy_northstar = {version = "0.6", optional = true}
+bevy_northstar = { version = "0.6", optional = true }
 
 [dev-dependencies]
 bevy = { version = ">=0.18", features = ["dynamic_linking"] }

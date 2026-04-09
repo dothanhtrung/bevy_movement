@@ -1,11 +1,10 @@
 use bevy::prelude::*;
-use bevy_movement::linear::{
-    LinearDestination,
-    LinearMovement,
-};
+use bevy_movement::linear::LinearMovement;
 use bevy_movement::{
     Arrived,
+    Destination,
     MovementPluginAnyState,
+    NextDes,
 };
 
 fn main() {
@@ -45,16 +44,18 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials
         Transform::from_xyz(0.0, 7., 14.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
     ));
 
-    // Just for example.
+    // Just for example. You should not trigger this event manually.
     // Trigger function 'arrived' below to add new destination
-    commands.trigger(Arrived { entity: id });
+    commands.trigger(Arrived {
+        entity: id,
+        pos: Vec3::ZERO,
+    });
 }
 
 #[derive(Component)]
 struct Target;
 fn arrived(
     trigger: On<Arrived>,
-    mut query: Query<&mut LinearMovement>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -63,20 +64,23 @@ fn arrived(
     for entity in target.iter() {
         commands.entity(entity).despawn();
     }
-    if let Ok(mut movement) = query.get_mut(trigger.entity) {
-        let next_target = Vec3::new(
-            fastrand::i32(-50..50) as f32 / 10.,
-            fastrand::i32(-50..50) as f32 / 10.,
-            fastrand::i32(-50..50) as f32 / 10.,
-        );
 
-        movement.des.push(LinearDestination::from_pos(next_target));
+    let next_pos = Vec3::new(
+        fastrand::i32(-50..50) as f32 / 10.,
+        fastrand::i32(-50..50) as f32 / 10.,
+        fastrand::i32(-50..50) as f32 / 10.,
+    );
 
-        commands.spawn((
-            Mesh3d(meshes.add(Sphere::default())),
-            Transform::from_translation(next_target),
-            MeshMaterial3d(materials.add(StandardMaterial::default())),
-            Target,
-        ));
-    }
+    commands.trigger(NextDes {
+        entity: trigger.entity,
+        des: Destination::from_pos(next_pos),
+        is_chain: false,
+    });
+
+    commands.spawn((
+        Mesh3d(meshes.add(Sphere::default())),
+        Transform::from_translation(next_pos),
+        MeshMaterial3d(materials.add(StandardMaterial::default())),
+        Target,
+    ));
 }

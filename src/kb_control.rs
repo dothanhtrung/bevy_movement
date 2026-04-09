@@ -1,6 +1,7 @@
-use crate::linear::{
-    LinearDestination,
-    LinearMovement,
+use crate::linear::LinearMovement;
+use crate::{
+    Destination,
+    NextDes,
 };
 use bevy::app::App;
 use bevy::math::{
@@ -107,15 +108,17 @@ fn builder(mut commands: Commands, query: Query<Entity, With<ActionInit>>) {
 }
 
 fn moving(
+    mut commands: Commands,
     mut query: Query<(
         &ActionState<MovementAction>,
         &mut LinearMovement,
         &Transform,
         &mut KbMovementObject,
+        Entity,
     )>,
     time: Res<Time>,
 ) {
-    for (state, mut movement, transform, mut kb_control) in query.iter_mut() {
+    for (state, mut movement, transform, mut kb_control, entity) in query.iter_mut() {
         if state.axis_pair(&MovementAction::Walk) != Vec2::ZERO {
             kb_control.is_moving = true;
             let direction = state.clamped_axis_pair(&MovementAction::Walk);
@@ -140,7 +143,11 @@ fn moving(
                     continue;
                 }
             }
-            movement.des = vec![LinearDestination::from_pos(next_pos)];
+            commands.trigger(NextDes {
+                entity,
+                des: Destination::from_pos(next_pos),
+                is_chain: false,
+            });
         } else if kb_control.is_moving {
             movement.stop();
             kb_control.is_moving = false;

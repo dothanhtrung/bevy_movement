@@ -1,7 +1,11 @@
 pub mod circle;
 
 use crate::linear::circle::circle_travel;
-use crate::Arrived;
+use crate::{
+    Arrived,
+    Destination,
+    NextDes,
+};
 #[cfg(all(feature = "physic_2d"))]
 use avian2d::{
     math::Vector,
@@ -19,12 +23,15 @@ use avian3d::{
     },
 };
 use bevy::app::App;
+#[cfg(feature = "path_finding")]
+use bevy::prelude::Resource;
 use bevy::prelude::{
     in_state,
     Commands,
     Component,
     Entity,
     IntoScheduleConfigs,
+    On,
     Plugin,
     Query,
     Res,
@@ -35,8 +42,6 @@ use bevy::prelude::{
     Vec3,
     Vec3Swizzles,
 };
-#[cfg(feature = "path_finding")]
-use bevy::prelude::Resource;
 #[cfg(feature = "path_finding")]
 use bevy_northstar::prelude::{
     AgentPos,
@@ -77,6 +82,8 @@ where
         #[cfg(feature = "path_finding")]
         app.insert_resource(GridInfo::default());
 
+        app.add_observer(next_des);
+
         if self.states.is_empty() {
             app.add_systems(Update, systems);
         } else {
@@ -87,23 +94,11 @@ where
     }
 }
 
-#[derive(Default, Clone)]
-pub struct LinearDestination {
-    pub pos: Vec3,
-    pub custom_velocity: Option<f32>,
-}
-
-impl LinearDestination {
-    pub fn from_pos(pos: Vec3) -> Self {
-        Self { pos, ..Self::default() }
-    }
-}
-
 #[derive(Component)]
 pub struct LinearMovement {
     pub speed: f32,
 
-    pub des: Vec<LinearDestination>,
+    pub des: Vec<Destination>,
 
     /// Repeat destination
     pub is_repeated: bool,
@@ -239,7 +234,10 @@ fn check_arrived(
         }
 
         if arrived {
-            commands.trigger(Arrived { entity: e });
+            commands.trigger(Arrived {
+                entity: e,
+                pos: next_stop,
+            });
             if movement.is_repeated {
                 let first_des = movement.as_ref().des.first().unwrap().clone();
                 movement.des.push(first_des);
@@ -248,25 +246,32 @@ fn check_arrived(
 
             #[cfg(feature = "path_finding")]
             {
-                commands.entity(e).remove::<NextPos>();
                 _agent_pos.0 = _next_pos.0;
+                commands.entity(e).remove::<NextPos>();
             }
         }
     }
 }
 
 #[cfg(feature = "path_finding")]
-fn update_travel_stop(mut query: Query<(&NextPos, &mut LinearMovement)>, tile_size: Res<GridInfo>) {
+fn update_travel_stop(mut query: Query<(&NextPos, &mut LinearMovement)>, grid_info: Res<GridInfo>) {
     for (next_pos, mut movement) in query.iter_mut() {
-        // TODO: Correct conversion
-        let next_pos_f = next_pos.0.as_vec3() * tile_size.tile_size + tile_size.grid_offset;
-        // TODO: Consider chain in mouse control
+        let next_pos_f = next_pos.0.as_vec3() * grid_info.tile_size + grid_info.grid_offset;
         if let Some(des) = movement.des.first() {
             if next_pos_f != des.pos {
-                movement.des = vec![LinearDestination::from_pos(next_pos_f)];
+                movement.des = vec![Destination::from_pos(next_pos_f)];
             }
         } else {
-            movement.des = vec![LinearDestination::from_pos(next_pos_f)];
+            movement.des = vec![Destination::from_pos(next_pos_f)];
         }
+    }
+}
+
+fn next_des(trigger: On<NextDes>, mut query: Query<&mut LinearMovement>) {
+    if let Ok(mut movement) = query.get_mut(trigger.entity) {
+        if !trigger.is_chain {
+            movement.des.clear();
+        }
+        movement.des.push(trigger.des.clone());
     }
 }

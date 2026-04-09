@@ -1,12 +1,11 @@
 use bevy::color::palettes::basic::WHITE;
 use bevy::prelude::*;
-use bevy_movement::linear::{
-    LinearDestination,
-    LinearMovement,
-};
+use bevy_movement::linear::LinearMovement;
 use bevy_movement::{
     Arrived,
+    Destination,
     MovementPluginAnyState,
+    NextDes,
 };
 
 fn main() {
@@ -36,35 +35,37 @@ fn setup(mut commands: Commands) {
 
     commands.spawn(Camera2d);
 
-    // Just for example.
+    // Just for example. You should not trigger this event manually.
     // Trigger function 'arrived' below to add new destination
-    commands.trigger(Arrived { entity: id });
+    commands.trigger(Arrived {
+        entity: id,
+        pos: Vec3::ZERO,
+    });
 }
 
 #[derive(Component)]
 struct Target;
-fn arrived(
-    trigger: On<Arrived>,
-    mut query: Query<&mut LinearMovement>,
-    mut commands: Commands,
-    target: Query<Entity, With<Target>>,
-) {
+fn arrived(trigger: On<Arrived>, mut commands: Commands, target: Query<Entity, With<Target>>) {
     for entity in target.iter() {
         commands.entity(entity).despawn();
     }
-    if let Ok(mut movement) = query.get_mut(trigger.entity) {
-        let next_target = Vec3::new(fastrand::i32(-640..640) as f32, fastrand::i32(-360..360) as f32, 0.);
 
-        movement.des.push(LinearDestination::from_pos(next_target));
+    let next_pos = Vec3::new(fastrand::i32(-640..640) as f32, fastrand::i32(-360..360) as f32, 0.);
 
-        commands.spawn((
-            Sprite {
-                color: WHITE.into(),
-                custom_size: Some(Vec2::new(32., 32.)),
-                ..default()
-            },
-            Transform::from_translation(next_target),
-            Target,
-        ));
-    }
+    // New destination
+    commands.trigger(NextDes {
+        entity: trigger.entity,
+        des: Destination::from_pos(next_pos),
+        is_chain: false,
+    });
+
+    commands.spawn((
+        Sprite {
+            color: WHITE.into(),
+            custom_size: Some(Vec2::new(32., 32.)),
+            ..default()
+        },
+        Transform::from_translation(next_pos),
+        Target,
+    ));
 }

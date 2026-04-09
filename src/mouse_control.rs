@@ -1,10 +1,13 @@
-use crate::linear::{
-    LinearDestination,
-    LinearMovement,
-    GridInfo,
+#[cfg(feature = "path_finding")]
+use crate::linear::GridInfo;
+use crate::{
+    Arrived,
+    Destination,
+    NextDes,
 };
-use crate::NextDes;
 use bevy::app::Update;
+#[cfg(feature = "path_finding")]
+use bevy::prelude::UVec3;
 use bevy::prelude::{
     in_state,
     App,
@@ -17,6 +20,7 @@ use bevy::prelude::{
     InfinitePlane3d,
     IntoScheduleConfigs,
     MouseButton,
+    On,
     Plugin,
     Query,
     Res,
@@ -49,6 +53,8 @@ where
     T: States,
 {
     fn build(&self, app: &mut App) {
+        app.add_observer(next_des).add_observer(arrived);
+
         if self.states.is_empty() {
             app.add_systems(Update, click);
         } else {
@@ -69,6 +75,8 @@ pub struct MouseMovementObject {
     /// Push new destination to the chain instead of overwrite
     pub is_chain: bool,
 
+    pub goals: Vec<Vec3>,
+
     /// Which button will trigger movement. Default is MouseButton::Left.
     pub click_button: Vec<MouseButton>,
 }
@@ -77,6 +85,7 @@ impl Default for MouseMovementObject {
     fn default() -> Self {
         Self {
             is_chain: false,
+            goals: Vec::new(),
             click_button: vec![MouseButton::Left],
         }
     }
@@ -88,8 +97,8 @@ fn click(
     camera_query: Query<(&Camera, &GlobalTransform)>,
     click_catchers: Query<(&GlobalTransform, &ClickCatcher), Without<Camera>>,
     windows: Query<&Window>,
-    mut linear_object: Query<(Entity, &mut LinearMovement, &MouseMovementObject)>,
-    #[cfg(feature = "path_finding")] tile_size: Res<GridInfo>,
+    mut linear_object: Query<(Entity, &mut MouseMovementObject)>,
+    #[cfg(feature = "path_finding")] grid_info: Res<GridInfo>,
 ) {
     let Ok((camera, camera_transform)) = camera_query.single() else {
         return;
@@ -127,24 +136,74 @@ fn click(
         }
     }
 
-    for (entity, mut linear_movement, obj) in linear_object.iter_mut() {
-        if mouse_btn.any_just_pressed(obj.click_button.clone()) {
-            commands.trigger(NextDes { entity, pos: world_pos });
+    for (entity, mut mv_object) in linear_object.iter_mut() {
+        if mouse_btn.any_just_pressed(mv_object.click_button.clone()) {
+            if !mv_object.is_chain {
+                mv_object.goals.clear();
+            }
+            mv_object.goals.push(world_pos);
 
             if cfg!(not(feature = "path_finding")) {
-                let next = LinearDestination::from_pos(world_pos);
-                if obj.is_chain {
-                    linear_movement.des.push(next);
-                } else {
-                    linear_movement.des = vec![next];
-                }
+                let is_chain = mv_object.is_chain;
+                let next_des = NextDes {
+                    entity,
+                    des: Destination::from_pos(world_pos),
+                    is_chain,
+                };
+                commands.trigger(next_des);
             }
 
             #[cfg(feature = "path_finding")]
             {
-                let tile_pos = (world_pos - tile_size.grid_offset) / tile_size.tile_size;
-                commands.entity(entity).insert(Pathfind::new(tile_pos.as_uvec3()));
+                commands
+                    .entity(entity)
+                    .insert(Pathfind::new(world_pos_to_tile(&world_pos, &grid_info)));
             }
         }
     }
+}
+
+fn arrived(
+    trigger: On<Arrived>,
+    mut _commands: Commands,
+    mut query: Query<(&mut MouseMovementObject, Entity)>,
+    #[cfg(feature = "path_finding")] grid_info: Res<GridInfo>,
+) {
+    if let Ok((mut mv_obj, _entity)) = query.get_mut(trigger.entity) {
+        if !mv_obj.goals.is_empty() && *mv_obj.goals.first().unwrap() == trigger.pos {
+            mv_obj.goals.remove(0);
+        }
+
+        #[cfg(feature = "path_finding")]
+        {
+            if let Some(world_pos) = mv_obj.goals.first() {
+                _commands
+                    .entity(_entity)
+                    .insert(Pathfind::new(world_pos_to_tile(world_pos, &grid_info)));
+            }
+        }
+    }
+}
+
+fn next_des(trigger: On<NextDes>, mut query: Query<&mut MouseMovementObject>) {
+    if let Ok(mut mv_obj) = query.get_mut(trigger.entity) {
+        if mv_obj.goals.is_empty() {
+            return;
+        }
+
+        // Remove all goals if canceled
+        if !trigger.is_chain && trigger.des.pos != *mv_obj.goals.first().unwrap() {
+            mv_obj.goals.clear();
+        }
+    }
+}
+
+#[cfg(feature = "path_finding")]
+fn world_pos_to_tile(pos: &Vec3, grid_info: &GridInfo) -> UVec3 {
+    let tile_pos = (pos - grid_info.grid_offset) / grid_info.tile_size;
+    UVec3::new(
+        tile_pos.x.round() as u32,
+        tile_pos.y.round() as u32,
+        tile_pos.z.round() as u32,
+    )
 }

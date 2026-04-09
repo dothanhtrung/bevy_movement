@@ -13,8 +13,6 @@ use bevy_northstar::components::AgentPos;
 use bevy_northstar::plugin::NorthstarPlugin;
 use bevy_northstar::prelude::{
     CardinalNeighborhood,
-    DebugGridBuilder,
-    DebugOffset,
     GridSettingsBuilder,
     Nav,
     NorthstarDebugPlugin,
@@ -32,7 +30,7 @@ fn main() {
     ));
 
     app.add_plugins(MovementPluginAnyState::any())
-        .add_systems(Startup, (setup, setup_grid).chain());
+        .add_systems(Startup, setup);
 
     app.run();
 }
@@ -42,23 +40,29 @@ fn setup(mut commands: Commands, window: Single<&Window>, mut grid_info: ResMut<
     let window_height = window.height();
     grid_info.tile_size = Vec3::splat(32.);
     let tile_size = grid_info.tile_size;
-    grid_info.grid_offset = Vec3::new(
-        (-window_width + tile_size.x) / 2.,
-        (-window_height + tile_size.y) / 2.,
-        0.0,
+    grid_info.grid_offset = Vec3::new(-window_width / 2., -window_height / 2., 0.0);
+    let grid_size = UVec2::new(
+        (window_width / tile_size.x) as u32,
+        (window_height / tile_size.y) as u32,
     );
 
     // Obstacle
-    for i in -(window_width / tile_size.x) as i32..(window_height / tile_size.x) as i32 {
-        if i % 2 == 0 {
-            commands.spawn((
-                Sprite {
-                    color: WHITE.into(),
-                    custom_size: Some(Vec2::new(tile_size.x, tile_size.y)),
-                    ..default()
-                },
-                Transform::from_xyz(0., i as f32 * tile_size.y, 0.),
-            ));
+    for i in 0..grid_size.x {
+        for j in 0..grid_size.y {
+            if i % 2 == 0 && j % 2 == 0 {
+                commands.spawn((
+                    Sprite {
+                        color: WHITE.into(),
+                        custom_size: Some(Vec2::new(tile_size.x, tile_size.y)),
+                        ..default()
+                    },
+                    Transform::from_xyz(
+                        i as f32 * tile_size.x + grid_info.grid_offset.x,
+                        j as f32 * tile_size.y + grid_info.grid_offset.y,
+                        0.,
+                    ),
+                ));
+            }
         }
     }
 
@@ -73,38 +77,26 @@ fn setup(mut commands: Commands, window: Single<&Window>, mut grid_info: ResMut<
             ..default()
         },
         LinearMovement {
-            speed: 100.,
+            speed: 1000.,
             ..default()
         },
     ));
 
     // Spawn grid
-    let grid_settings = GridSettingsBuilder::new_2d(
-        (window_width / tile_size.x) as u32,
-        (window_height / tile_size.y) as u32,
-    )
-    .chunk_size(8)
-    .build();
-    commands.spawn(CardinalGrid::new(&grid_settings)).with_child((
-        DebugGridBuilder::new(tile_size.x as u32, tile_size.y as u32)
-            .enable_cells()
-            .build(),
-        // Offset the debug grid to the center of the world.
-        DebugOffset(grid_info.grid_offset),
-    ));
-
-    commands.spawn(Camera2d);
-}
-
-fn setup_grid(grid: Single<&mut CardinalGrid>) {
-    let mut grid = grid.into_inner();
-    let width = grid.width();
-    for y in 0..grid.height() {
-        // Create some staggered impassable cells.
-        if y % 2 == 0 {
-            grid.set_nav(UVec3::new(width / 2, y, 0), Nav::Impassable);
+    let grid_settings = GridSettingsBuilder::new_2d(grid_size.x, grid_size.y)
+        .chunk_size(8)
+        .build();
+    let mut grid = CardinalGrid::new(&grid_settings);
+    for x in 0..grid.width() {
+        for y in 0..grid.height() {
+            // Create some staggered impassable cells.
+            if x % 2 == 0 && y % 2 == 0 {
+                grid.set_nav(UVec3::new(x, y, 0), Nav::Impassable);
+            }
         }
     }
-
     grid.build();
+    commands.spawn(grid);
+
+    commands.spawn(Camera2d);
 }
