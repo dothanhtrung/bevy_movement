@@ -1,11 +1,10 @@
 use crate::linear::{
     LinearDestination,
     LinearMovement,
-    TileSize,
+    GridInfo,
 };
 use crate::NextDes;
 use bevy::app::Update;
-use bevy::log::info;
 use bevy::prelude::{
     in_state,
     App,
@@ -90,7 +89,7 @@ fn click(
     click_catchers: Query<(&GlobalTransform, &ClickCatcher), Without<Camera>>,
     windows: Query<&Window>,
     mut linear_object: Query<(Entity, &mut LinearMovement, &MouseMovementObject)>,
-    #[cfg(feature = "path_finding")] tile_size: Res<TileSize>,
+    #[cfg(feature = "path_finding")] tile_size: Res<GridInfo>,
 ) {
     let Ok((camera, camera_transform)) = camera_query.single() else {
         return;
@@ -143,8 +142,7 @@ fn click(
 
             #[cfg(feature = "path_finding")]
             {
-                let tile_pos = world_pos / tile_size.0;
-                info!("New goal: {:?} {:?}", world_pos, tile_pos.as_uvec3());
+                let tile_pos = (world_pos - tile_size.grid_offset) / tile_size.tile_size;
                 commands.entity(entity).insert(Pathfind::new(tile_pos.as_uvec3()));
             }
         }

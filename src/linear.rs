@@ -19,13 +19,24 @@ use avian3d::{
     },
 };
 use bevy::app::App;
-use bevy::prelude::{in_state, info, Commands, Component, Entity, IntoScheduleConfigs, Plugin, Query, Res, States, Time, Transform, Update, Vec3, Vec3Swizzles};
-#[cfg(feature = "path_finding")]
 use bevy::prelude::{
-    Deref,
-    DerefMut,
-    Resource,
+    in_state,
+    Commands,
+    Component,
+    Entity,
+    IntoScheduleConfigs,
+    Plugin,
+    Query,
+    Res,
+    States,
+    Time,
+    Transform,
+    Update,
+    Vec3,
+    Vec3Swizzles,
 };
+#[cfg(feature = "path_finding")]
+use bevy::prelude::Resource;
 #[cfg(feature = "path_finding")]
 use bevy_northstar::prelude::{
     AgentPos,
@@ -64,7 +75,7 @@ where
         let systems = (circle_travel, check_arrived, straight_travel, update_travel_stop);
 
         #[cfg(feature = "path_finding")]
-        app.insert_resource(TileSize(Vec3::new(1., 1., 1.)));
+        app.insert_resource(GridInfo::default());
 
         if self.states.is_empty() {
             app.add_systems(Update, systems);
@@ -138,8 +149,11 @@ impl LinearMovement {
 }
 
 #[cfg(feature = "path_finding")]
-#[derive(Resource, Deref, DerefMut)]
-pub struct TileSize(pub Vec3);
+#[derive(Resource, Default)]
+pub struct GridInfo {
+    pub tile_size: Vec3,
+    pub grid_offset: Vec3,
+}
 
 #[cfg(not(any(feature = "physic_2d", feature = "physic_3d")))]
 fn straight_travel(time: Res<Time>, mut query: Query<(&mut Transform, &LinearMovement)>) {
@@ -242,14 +256,17 @@ fn check_arrived(
 }
 
 #[cfg(feature = "path_finding")]
-fn update_travel_stop(mut query: Query<(&NextPos, &mut LinearMovement)>, tile_size: Res<TileSize>) {
+fn update_travel_stop(mut query: Query<(&NextPos, &mut LinearMovement)>, tile_size: Res<GridInfo>) {
     for (next_pos, mut movement) in query.iter_mut() {
-        let next_pos_f = next_pos.0.as_vec3() * tile_size.0;
+        // TODO: Correct conversion
+        let next_pos_f = next_pos.0.as_vec3() * tile_size.tile_size + tile_size.grid_offset;
+        // TODO: Consider chain in mouse control
         if let Some(des) = movement.des.first() {
             if next_pos_f != des.pos {
-                info!("Set real next pos:  {:?}", next_pos_f);
                 movement.des = vec![LinearDestination::from_pos(next_pos_f)];
             }
+        } else {
+            movement.des = vec![LinearDestination::from_pos(next_pos_f)];
         }
     }
 }

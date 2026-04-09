@@ -4,8 +4,8 @@ use bevy::color::palettes::basic::{
 };
 use bevy::prelude::*;
 use bevy_movement::linear::{
+    GridInfo,
     LinearMovement,
-    TileSize,
 };
 use bevy_movement::mouse_control::MouseMovementObject;
 use bevy_movement::MovementPluginAnyState;
@@ -37,10 +37,16 @@ fn main() {
     app.run();
 }
 
-fn setup(mut commands: Commands, window: Single<&Window>, mut tile_size: ResMut<TileSize>) {
+fn setup(mut commands: Commands, window: Single<&Window>, mut grid_info: ResMut<GridInfo>) {
     let window_width = window.width();
     let window_height = window.height();
-    **tile_size = Vec3::splat(32.);
+    grid_info.tile_size = Vec3::splat(32.);
+    let tile_size = grid_info.tile_size;
+    grid_info.grid_offset = Vec3::new(
+        (-window_width + tile_size.x) / 2.,
+        (-window_height + tile_size.y) / 2.,
+        0.0,
+    );
 
     // Obstacle
     for i in -(window_width / tile_size.x) as i32..(window_height / tile_size.x) as i32 {
@@ -59,11 +65,7 @@ fn setup(mut commands: Commands, window: Single<&Window>, mut tile_size: ResMut<
     // Movement object
     commands.spawn((
         AgentPos(UVec3::ZERO),
-        Transform::from_xyz(
-            (-window_width + tile_size.x) / 2.,
-            (-window_height + tile_size.y) / 2.,
-            0.,
-        ),
+        Transform::from_translation(grid_info.grid_offset),
         MouseMovementObject::default(), // Move by mouse input
         Sprite {
             color: RED.into(),
@@ -88,11 +90,7 @@ fn setup(mut commands: Commands, window: Single<&Window>, mut tile_size: ResMut<
             .enable_cells()
             .build(),
         // Offset the debug grid to the center of the world.
-        DebugOffset(Vec3::new(
-            (-window_width + tile_size.x) / 2.,
-            (-window_height + tile_size.y) / 2.,
-            0.0,
-        )),
+        DebugOffset(grid_info.grid_offset),
     ));
 
     commands.spawn(Camera2d);
@@ -104,7 +102,7 @@ fn setup_grid(grid: Single<&mut CardinalGrid>) {
     for y in 0..grid.height() {
         // Create some staggered impassable cells.
         if y % 2 == 0 {
-            // grid.set_nav(UVec3::new(width / 2, y, 0), Nav::Impassable);
+            grid.set_nav(UVec3::new(width / 2, y, 0), Nav::Impassable);
         }
     }
 
