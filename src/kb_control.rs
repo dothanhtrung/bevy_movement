@@ -72,37 +72,42 @@ pub enum MovementAction {
     Walk,
 }
 
-impl MovementAction {
-    fn new() -> InputMap<Self> {
-        let mut input_map = InputMap::default();
-
-        input_map.insert_dual_axis(Self::Walk, GamepadStick::LEFT);
-        input_map.insert_dual_axis(Self::Walk, VirtualDPad::wasd());
-        input_map.insert_dual_axis(Self::Walk, VirtualDPad::arrow_keys());
-
-        input_map
-    }
-}
-
 #[derive(Component, Default)]
 struct ActionInit;
 
-// TODO: Allow specify key for action
 #[derive(Component)]
 #[require(ActionInit)]
 pub struct KbMovementObject {
-    is_moving: bool,
+    /// Internal use for store moving state. You should not change this value.
+    pub is_moving: bool,
+    /// Gamepad button to control movement. Default `GamepadStick::LEFT`.
+    pub gamepad: Vec<GamepadStick>,
+    /// DPad button to control movement. Default `VirtualDPad::wasd()` & `VirtualDPad::arrow_keys()`.
+    pub dpad: Vec<VirtualDPad>,
 }
 
 impl Default for KbMovementObject {
     fn default() -> Self {
-        Self { is_moving: false }
+        Self {
+            is_moving: false,
+            gamepad: vec![GamepadStick::LEFT],
+            dpad: vec![VirtualDPad::wasd(), VirtualDPad::arrow_keys()],
+        }
     }
 }
 
-fn builder(mut commands: Commands, query: Query<Entity, With<ActionInit>>) {
-    for entity in query.iter() {
-        commands.entity(entity).insert(MovementAction::new());
+fn builder(mut commands: Commands, query: Query<(Entity, &KbMovementObject), With<ActionInit>>) {
+    for (entity, kb_object) in query.iter() {
+        let mut input_map = InputMap::default();
+
+        for input in kb_object.gamepad.iter() {
+            input_map.insert_dual_axis(MovementAction::Walk, input.clone());
+        }
+        for input in kb_object.dpad.iter() {
+            input_map.insert_dual_axis(MovementAction::Walk, input.clone());
+        }
+
+        commands.entity(entity).insert(input_map);
         commands.entity(entity).remove::<ActionInit>();
     }
 }
