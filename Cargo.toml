@@ -23,7 +23,7 @@ fastrand = "2.4"
 
 [features]
 default = ["mouse_control", "kb_control"]
-2d = []
+2d = [] # Ignore z index
 # collider_3d and collider_2d cannot be enabled at the same time
 collider_3d = ["avian3d"]
 collider_2d = ["2d", "avian2d"]
@@ -46,5 +46,5 @@ name = "input_control_2d"
 required-features = ["mouse_control", "kb_control", "2d"]
 
 [[example]]
-name = "path_finding"
+name = "path_finding_2d"
 required-features = ["2d", "path_finding", "mouse_control"]

@@ -1,3 +1,6 @@
+//! Move object by mouse click with path finding provided by bevy_northstar.
+//! You will need to set up your grid with bevy_northstar first.
+
 use bevy::color::palettes::basic::{
     RED,
     WHITE,
@@ -15,7 +18,6 @@ use bevy_northstar::prelude::{
     CardinalNeighborhood,
     GridSettingsBuilder,
     Nav,
-    NorthstarDebugPlugin,
 };
 use bevy_northstar::CardinalGrid;
 
@@ -24,12 +26,10 @@ fn main() {
 
     app.add_plugins(DefaultPlugins);
 
-    app.add_plugins((
-        NorthstarPlugin::<CardinalNeighborhood>::default(),
-        NorthstarDebugPlugin::<CardinalNeighborhood>::default(),
-    ));
+    // NorthstarPlugin for path finding
+    app.add_plugins(NorthstarPlugin::<CardinalNeighborhood>::default());
 
-    app.add_plugins(MovementPluginAnyState::any())
+    app.add_plugins(MovementPluginAnyState::any()) // This plugin
         .add_systems(Startup, setup);
 
     app.run();
@@ -38,8 +38,11 @@ fn main() {
 fn setup(mut commands: Commands, window: Single<&Window>, mut grid_info: ResMut<GridInfo>) {
     let window_width = window.width();
     let window_height = window.height();
-    grid_info.tile_size = Vec3::splat(32.);
-    let tile_size = grid_info.tile_size;
+
+    // Let this plugin know about grid offset and tile size.
+    // This offset and tile size should be same with the value you set for Northstar
+    let tile_size = Vec3::splat(32.);
+    grid_info.tile_size = tile_size;
     grid_info.grid_offset = Vec3::new(-window_width / 2., -window_height / 2., 0.0);
     let grid_size = UVec2::new(
         (window_width / tile_size.x) as u32,
@@ -82,7 +85,7 @@ fn setup(mut commands: Commands, window: Single<&Window>, mut grid_info: ResMut<
         },
     ));
 
-    // Spawn grid
+    // Set up Northstar grid
     let grid_settings = GridSettingsBuilder::new_2d(grid_size.x, grid_size.y)
         .chunk_size(8)
         .build();

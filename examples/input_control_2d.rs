@@ -1,3 +1,6 @@
+//! Move object by mouse click or keyboard in 2D.
+//! Object won't go through wall if collider_2d is enabled.
+
 #[cfg(feature = "collider_2d")]
 use avian2d::{
     prelude::{
@@ -23,6 +26,7 @@ fn main() {
     #[cfg(feature = "collider_2d")]
     app.add_plugins((PhysicsPlugins::default(), PhysicsDebugPlugin));
 
+    // Add the plugin MovementPlugin or MovementPluginAnyState
     app.add_plugins(MovementPluginAnyState::any())
         .add_systems(Startup, setup);
 

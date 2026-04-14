@@ -77,7 +77,7 @@ pub struct MouseMovementObject {
 
     pub goals: Vec<Vec3>,
 
-    /// Which button will trigger movement. Default is MouseButton::Left.
+    /// Which buttons will trigger movement. Default is MouseButton::Left.
     pub click_button: Vec<MouseButton>,
 }
 

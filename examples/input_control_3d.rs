@@ -1,3 +1,6 @@
+//! Move object by mouse click or keyboard in 3D.
+//! Object won't go through wall if collider_3d is enabled.
+
 #[cfg(feature = "collider_3d")]
 use avian3d::{
     prelude::{

@@ -64,12 +64,14 @@ impl MovementPluginAnyState {
     }
 }
 
+/// Triggered when entity is arrived at the destination
 #[derive(EntityEvent)]
 pub struct Arrived {
     pub entity: Entity,
     pub pos: Vec3,
 }
 
+/// Trigger this to set the next destination for entity
 #[derive(EntityEvent)]
 pub struct NextDes {
     pub entity: Entity,
