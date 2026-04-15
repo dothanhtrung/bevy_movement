@@ -6,7 +6,7 @@ use crate::{
     Destination,
     NextDes,
 };
-#[cfg(all(feature = "collider_2d"))]
+#[cfg(feature = "collider_2d")]
 use avian2d::{
     math::Vector,
     prelude::{
@@ -14,7 +14,7 @@ use avian2d::{
         PhysicsSchedulePlugin,
     },
 };
-#[cfg(all(feature = "collider_3d"))]
+#[cfg(feature = "collider_3d")]
 use avian3d::{
     math::Vector,
     prelude::{
