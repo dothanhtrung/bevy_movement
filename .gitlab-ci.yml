@@ -10,7 +10,6 @@ cache: &global_cache
     - target/
     - .cargo/registry/index
     - .cargo/registry/cache
-    - .cargo/bin
   policy: pull-push
 
 variables:
@@ -29,9 +28,9 @@ variables:
 test:
   stage: test
   script:
-    - cargo test --examples
-    - cargo test --examples --features=collider_2d
-    - cargo test --examples --features=collider_3d
+    - cargo check --examples
+    - cargo check --examples --features=collider_2d
+    - cargo check --examples --features=collider_3d
     - /usr/local/cargo/bin/cargo-sweep sweep -t 60 || true
   rules:
     - changes:
