@@ -15,10 +15,10 @@ bevy = { version = ">=0.18", features = ["bevy_state"], default-features = false
 avian3d = { version = "0.6", optional = true }
 avian2d = { version = "0.6", optional = true }
 leafwing-input-manager = { version = "0.20", optional = true }
-bevy_northstar = { version = "0.6", optional = true }
+bevy_northstar = { version = "0.6", default-features = false, features = ["parallel"], optional = true }
 
 [dev-dependencies]
-bevy = { version = ">=0.18", features = ["dynamic_linking"] }
+bevy = { version = ">=0.18", features = ["dynamic_linking", "free_camera"] }
 fastrand = "2.4"
 
 [features]
@@ -48,3 +48,7 @@ required-features = ["mouse_control", "kb_control", "2d"]
 [[example]]
 name = "path_finding_2d"
 required-features = ["2d", "path_finding", "mouse_control"]
+
+[[example]]
+name = "path_finding_3d"
+required-features = ["mouse_control", "path_finding"]

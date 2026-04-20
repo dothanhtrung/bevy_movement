@@ -1,11 +1,14 @@
 //! Move object by mouse click with path finding provided by bevy_northstar.
 //! You will need to set up your grid with bevy_northstar first.
+//! Consider remove northstar support because its coordinate system and grid size is ambious, unstable and hard to use.
+
 
 use bevy::color::palettes::basic::{
     RED,
     WHITE,
 };
 use bevy::prelude::*;
+use bevy::window::WindowResolution;
 use bevy_movement::linear::{
     GridInfo,
     LinearMovement,
@@ -24,7 +27,14 @@ use bevy_northstar::CardinalGrid;
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins);
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            name: Some(String::from("bevy")),
+            resolution: WindowResolution::new(1280, 720),
+            ..default()
+        }),
+        ..default()
+    }));
 
     // NorthstarPlugin for path finding
     app.add_plugins(NorthstarPlugin::<CardinalNeighborhood>::default());
@@ -43,13 +53,14 @@ fn setup(mut commands: Commands, window: Single<&Window>, mut grid_info: ResMut<
     // This offset and tile size should be same with the value you set for Northstar
     let tile_size = Vec3::splat(32.);
     grid_info.tile_size = tile_size;
-    grid_info.grid_offset = Vec3::new(-window_width / 2., -window_height / 2., 0.0);
+    grid_info.grid_offset = Vec3::new(-window_width / 2. + 16., -window_height / 2. + 16., 0.0);
     let grid_size = UVec2::new(
         (window_width / tile_size.x) as u32,
         (window_height / tile_size.y) as u32,
     );
 
     // Obstacle
+    info!("grid_size: {:?}", grid_size);
     for i in 0..grid_size.x {
         for j in 0..grid_size.y {
             if i % 2 == 0 && j % 2 == 0 {
